@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>Mib browser</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css"	href="css/index.css" />
+<link href="/css/ui.jqgrid.css" rel="stylesheet" type="text/css" />
+<!-- <link rel="stylesheet" type="text/css"	href="css/index.css" /> -->
+<script type="text/javascript" src="js/dtree.js"></script>
+<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+<script  type="text/javascript" src="js/jquery.jqGrid.min.js"></script>
+<script type="text/javascript" src="js/grid.locale-en.js" ></script>
+<script type="text/javascript" src="js/main.js"></script>
+</head>
+<body >
+	<div class="wrapper">
+		<div class="header">
+			<div class="logo">
+				<a>Mib Browser</a>
+			</div>
+			<div class="nav-bar">
+				<div class="clearfix"></div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="left" style="overflow: auto;">
+
+				<form id="uploadForm"  enctype="multipart/form-data">
+					<div>
+						<input type="file" name="file" id="file" multiple="multiple" onchange="doUpload();" />
+					</div>
+				</form>
+				
+			
+				<p>
+					<a href="javascript: tree.openAll();">open all</a> | <a
+						href="javascript: tree.closeAll();">close all</a> | <a
+						href="javascript: tree.init();">clear</a>
+				</p>
+				<div class="dtree" id="dtree">
+
+				</div>
+			</div>
+			<div class="main">
+				<form class="form-horizontal" id="search-form">
+				<div class="form-group form-group-lg">
+						<input id="isLeaf" name="isleaf" type="hidden"/>
+						<input id="nodeName" name="nodeName" type="hidden"/>
+					<br/>
+					<label>Host</label> <input type="text" id="host" name="host" value="172.18.192.252">
+					 <label>Operations</label>
+					<select name="operation" id="operation" onchange="doSelectOper();">
+						<option value="1">get</option>
+						<option value="2">getNext</option>
+						<option value="3">set</option>
+						<option value="4">walk</option>	
+						<option value="5">table</option>
+						<option value="6">getBulk</option>
+					</select> 
+					<label>OID</label> <input name="oid" id="oid" >
+					<label>Syntax</label> <input name="syntax" id="syntax" >
+					<label>set value</label> <input  id="setValue" name="setValue" disabled > 
+					<br/>
+					<button type="submit" id="bth-search"
+						class="btn btn-primary btn-lg">go</button>
+						<button type="button" id="bth-protocolset" onclick="ShowDiv('mainProduct','fade')"
+						class="btn btn-primary btn-lg">config</button>
+						<button type="button" id="bth-batchset" onclick="ShowDiv('setMainProduct','setFade');pageInit();"
+						class="btn btn-primary btn-lg">Multiple Variable Bindings</button>
+						<button type="button" id="bth-tableview" onclick="ShowDiv('tableMainProduct','tableFade');tableView();"
+						class="btn btn-primary btn-lg">table view</button>
+				
+				</div>
+				 <div class="right-content">
+				 <div>
+<br/>
+					   <textarea name="result" id="result" rows="20" style="color:black; opacity:1;width:80%;" disabled=""></textarea>
+				 </div>
+			      <div id="descDiv">
+			      	<br/><br/>
+			      	<label>MIB Node Description</label><br/>
+			      	<textarea name="description" id="description" rows="10" style="color:black; opacity:1;width:80%;" disabled="">A textual description of the node. </textarea>
+				</div>
+			      </div>
+				<div>
+				
+				
+				</div>
+			</form>
+			
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="footer"></div>
+	</div>
+	
+	  <!-- 触发按钮 -->
+   
+
+    <!-- 显示内容部分 -->
+    <div id="fade" class="black_overlay"></div>
+    <div id="mainProduct" class="white_content">
+    <div class="title">
+				<a>SNMP Protocol Preferences</a>
+				</div>
+			<div>
+				<fieldset style="border-width: 1px; border-color: blue; width:95%; height:220"> <legend>snmp protocol version</legend>
+				<table>
+				<tr>
+				<td><input type="radio" name="version" value='1'/><label>SNMPv1</label></td>
+				<td><input name="version" checked type="radio" value="2"/><label>SNMPv2c</label></td>
+				<td><input name="version"  type="radio" value="3"/><label>SNMPv3</label></td>
+				</tr>
+            	</table>
+				</fieldset>
+				<fieldset style="border-width: 1px; border-color: blue; width:95%; height:220"> <legend>General</legend>
+					<table><tr>
+					<td><label>Timeout[s]</label><input name="timeout" id="timeout" value="5"></td>
+					<td><label>Retransmits</label><input name="retransmits" id="retransmits" value="4"></td>	
+					<td></td>
+					
+					<tr>
+					<td><label>ReadCommunity</label><input name="readCommunity" id="readCommunity" value="public"></td>
+					<td><label>SetCommunity</label><input name="setCommunity" id="setCommunity" value="private"></td>
+					<td><label>Port</label><input name="port" id="port" value="161"></td>
+					</tr></table>
+				</fieldset>
+				<fieldset style="border-width: 1px; border-color: blue; width:95%; height:220"> <legend>Get-Bulk settings</legend>
+					<label>Non repeaters</label> <input type="text" id="nonRepeaters" name="nonRepeaters" value="0"> 
+					<label>Max repetitions</label><input name="maxRepetitions" id="maxRepetitions" value="10">
+					
+				</fieldset>
+				<fieldset style="border-width: 1px; border-color: blue; width:95%; height:220"> <legend>SNMPv3 security</legend>
+					<table>	
+					<tr>
+<!-- 						<td><label>User profile name</label><input name="profileName" id="profileName" ></td> -->
+						<td><label>User name</label><input name="userName" id="userName" ></td>
+					
+					<td style="display:none"><label>Context name</label><input name="contextName" id="contextName" ></td>
+					
+					<td style="display:none"><label>Context engine ID</label><input name="contextEngineId" id="contextEngineId" ></td>
+					</tr>
+					<tr>
+					<td><label>Authentication</label>
+					<select name="authProtocol" id="authProtocol">
+						<option value="0">None</option>
+						<option value="1">HMAC-MD5</option>
+						<option value="2">HMAC-SHA</option>
+					</select></td>
+					<td colspan="2"><label>Password</label><input name="authPass" id="authPass" type="password" > <span id=clickauth><a href="javascript:change('auth')">show</a></span>  </td>
+					</tr>
+					<tr>
+					<td><label>Privacy</label>
+					<select name="priProtocol" id="priProtocol">
+						<option value="0">None</option>
+						<option value="1">CBC-DES</option>
+						<option value="2">CFB-AES-128</option>
+					</select></td>
+					<td colspan="2"><label>Password</label><input name="priPass" id="priPass" type="password" > <span id=clickpri><a href="javascript:change('pri')">show</a></span></td>
+					
+					</tr>
+					<tr style="display:none">
+					<td ><label>Security level</label><input name="securityLevel" id="securityLevel" ></td>
+					</tr>
+					</table>
+					</fieldset>
+					<br/>
+					<div style="text-align:center">
+					<button type="button" id="bth-protocolsave"  onclick="CloseDiv('mainProduct','fade')"
+						class="btn btn-primary btn-lg">ok</button>
+					</div>
+					
+			</div>			
+    </div>
+ 
+ 	<div id="setFade" class="black_overlay"></div>
+    <div id="setMainProduct" class="white_content">
+   	
+   	<!--新增表单区域开始-->
+<!-- 		<form method="post" id="addBatchForm"> -->
+<!-- 		    <div >           -->
+<!-- 		        <table id="setTable"></table>  -->
+<!-- 		        <div id="addpager"></div>            -->
+<!-- 		    </div> -->
+		
+<!-- 		    按钮开始 -->
+<!-- 		    <div class="new-guard"> -->
+<!-- 		        <input type="submit" class="btn save-btn" onclick="saveRows()" -->
+<!-- 		            value="set"> <input type="button" class="btn back-btn" -->
+<!-- 		            onclick="CloseDiv('setMainProduct','setFade')" value="close"> -->
+<!-- 		    </div> -->
+<!-- 		    按钮结束 -->
+<!-- 		</form> -->
+   	
+    <div style="text-align:center">
+    		    <div >          
+		        <table id="setTable"></table> 
+		        <div id="addpager"></div>           
+		    </div>
+					<button type="button" id="bth-batchset"  onclick="saveRows();"
+						class="btn btn-primary btn-lg">set</button>
+					<button type="button" id="bth-batchsetclose"  onclick="CloseDiv('setMainProduct','setFade')"
+						class="btn btn-primary btn-lg">close</button>
+	</div>
+    </div>
+
+	<div id="tableFade" class="black_overlay"></div>
+    <div id="tableMainProduct" class="white_content">
+    <div style="text-align:center">
+     <div >          
+		        <table id="viewTable"></table> 
+		        <div id="viewpager"></div>           
+		    </div>
+					<button type="button" id="bth-tableview"  onclick="CloseDiv('tableMainProduct','tableFade');deleteAll();"
+						class="btn btn-primary btn-lg">close</button>
+	</div>
+    </div>
+
+</body>
+</html>

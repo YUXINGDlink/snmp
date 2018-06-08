@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>Mib browser</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css"	href="css/index.css" />
+<!-- <link rel="stylesheet" type="text/css"	href="css/index.css" /> -->
+<script type="text/javascript" src="js/dtree.js"></script>
+<script type="text/javascript" src="webjars/jquery/2.2.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<div class="logo">
+				<a>Mib Browser</a>
+			</div>
+			<div class="nav-bar">
+				<div class="clearfix"></div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="left" style="max-height:200px;overflow: auto;">
+
+				<form id="uploadForm"  enctype="multipart/form-data">
+					<div>
+						<input type="file" name="file" id="file" multiple="multiple" onchange="doUpload();" />
+					</div>
+				</form>
+				
+			
+				<p>
+					<a href="javascript: tree.openAll();">open all</a> | <a
+						href="javascript: tree.closeAll();">close all</a>
+				</p>
+				<div class="dtree" id="dtree">
+
+				</div>
+			</div>
+			<div class="main">
+			<br/>
+			<br/>
+				<form class="form-horizontal" id="search-form">
+				<div class="form-group form-group-lg">
+						<input id="isLeaf" name="isleaf" type="hidden"/>
+					
+					<label>Host</label> <input type="text" id="host" name="host" value="172.18.192.202"> 
+					<label>Port</label><input name="port" id="port" value="161">
+					<label>Community</label><input name="community" id="community" value="public">
+					<br/>
+					 <label>Operations</label>
+					<select name="operation" id="operation" onchange="doSelectOper();">
+						<option value="1">get</option>
+						<option value="2">getNext</option>
+						<option value="3">set</option>
+						<option value="4">walk</option>	
+						<option value="5">table</option>
+					</select> 
+					<label>Snmp Version</label> <select name="version" id="version">
+						<option value="0">1</option>
+						<option value="1">2C</option>
+						<option value="2">3</option>
+					</select>
+					<label>OID</label> <input name="oid" id="oid" >
+					
+					
+					<label>set value</label> <input  id="setValue" name="setValue" disabled > 
+					<button type="submit" id="bth-search"
+						class="btn btn-primary btn-lg">go</button>
+				</div>
+				 <div class="right-content">
+				 <div>
+<br/><br/><br/><br/>
+					   <textarea name="result" id="result" rows="20" style="color:black; opacity:1;width:80%;" disabled=""></textarea>
+				 </div>
+			      <div id="descDiv" style="display:none">
+			      	<br/><br/>
+			      	<label>MIB Node Description</label><br/>
+			      	<textarea name="description" id="description" rows="5" style="color:black; opacity:1;width:80%;" disabled="">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA textual description of the entity. This value should include the full name and version identification of the system\s hardware type, software operating-system, and networking software. It is mandatory that this only contain printable ASCII characters.</textarea>
+				</div>
+			      </div>
+				<div>
+				
+				
+				</div>
+			</form>
+			
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="footer"></div>
+	</div>
+</body>
+</html>
