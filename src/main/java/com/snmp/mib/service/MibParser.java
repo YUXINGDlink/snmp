@@ -79,36 +79,35 @@ public class MibParser {
                 MibValue value = mvs.getValue();
                 MibValueSymbol parent = mvs.getParent();
                 String parentValue = "";
-                System.err.println("name==" + name);
-                System.err.println("value==" + value);
-                System.err.println("isTableColumn==" + isTableColumn);
+//                System.err.println("name==" + name);
+//                System.err.println("value==" + value);
+//                System.err.println("isTableColumn==" + isTableColumn);
                 if (parent != null) {
-                parentValue = parent.getValue().toString();
-                if (parent.getParent() == null) {
-                	System.err.println("supperParentName======" + mibName);
-                System.err.println("supperParentValue=====" + parentValue);
-            	// parent=root
-            
-            	}
-            System.err.println("parentName=" + parent.getName());
-            System.err.println("parentValue=" + parent.getValue());
-            
-            } else {
-            }
-            System.err.println("syntax=" + syntax);
-            System.err.println("access=" + access);
-            System.err.println("status=" + status);
-            System.err.println("-------------------------------------");
-            
-            mo.setName(name);
-            //				mo.setValue(value.toString());
-            mo.setOid(value.toString());
-            mo.setParent(parentValue.toString().replaceAll("[.]", ""));
-            mo.setSyntax(syntax);
-            mo.setAccess(access);
-            mo.setStatus(status);
-            mo.setDesc(desc);
-            mo.setId(value.toString().replaceAll("[.]", ""));
+                    parentValue = parent.getValue().toString();
+//                    if (parent.getParent() == null) {
+//                    	System.err.println("supperParentName======" + mibName);
+//                    	System.err.println("supperParentValue=====" + parentValue);
+                    // parent=root
+                    
+//                    }
+//                    System.err.println("parentName=" + parent.getName());
+//                    System.err.println("parentValue=" + parent.getValue());
+                
+                } 
+//                System.err.println("syntax=" + syntax);
+//                System.err.println("access=" + access);
+//                System.err.println("status=" + status);
+//                System.err.println("-------------------------------------");
+                
+                mo.setName(name);
+                //mo.setValue(value.toString());
+                mo.setOid(value.toString());
+                mo.setParent(parentValue.toString().replaceAll("[.]", ""));
+                mo.setSyntax(syntax);
+                mo.setAccess(access);
+                mo.setStatus(status);
+                mo.setDesc(desc);
+                mo.setId(value.toString().replaceAll("[.]", ""));
             	mo.setIsTableColumn(isTableColumn);
             	list.add(mo);
             	i++;
@@ -118,38 +117,48 @@ public class MibParser {
     	return list;
     }
 
-	/**
-	 * 
-	 * @param list
-	 * @return 返回生成mib tree所需的xml
-	 */
-	public static String toStringFromDoc(List<MibObject> list) {
-		Nodes treeNodes = new Nodes();
-		StringBuffer xmlnodes = new StringBuffer();
-		if (list != null && list.size() > 0) {
-			xmlnodes.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-			xmlnodes.append("<nodes>");
-			for (int i = 0; i < list.size(); i++) {
-				MibObject mo = (MibObject) list.get(i);
-				treeNodes.setId(i);
-				treeNodes.setParentId(mo.getParent().replaceAll("[.]", ""));
-				treeNodes.setNodeName(mo.getName());
-				treeNodes.setNodeId(mo.getValue().replaceAll("[.]", ""));
-				treeNodes.setValue(mo.getValue());
-				treeNodes.setSyntax(mo.getSyntax());
-				// treeNodes.setDesc(mo.getDesc());
-				xmlnodes.append("<node nodeId='" + treeNodes.getNodeId() + "' parentId='" + treeNodes.getParentId()
-						+ "' desc='" + treeNodes.getDesc() + "' syntax='" + treeNodes.getSyntax() + "' value='"
-						+ treeNodes.getValue() + "'>" + treeNodes.getNodeName() + "</node>");
-			}
-			xmlnodes.append("</nodes>");
-		}
-
-		return xmlnodes.toString();
-	}
-
-	public static String mibList2Json(List<MibObject> list) {
-		JSONArray json = JSONArray.fromObject(list);
-		return json.toString();
-	}
+/**
+ * 
+ * Description:返回生成mib tree所需的xml <br> 
+ *  
+ * @author XXX<br>
+ * @param list 
+ * @return  <br>
+ */
+    public static String toStringFromDoc(List<MibObject> list) {
+    	Nodes treeNodes = new Nodes();
+    	StringBuffer xmlnodes = new StringBuffer();
+    	if (list != null && list.size() > 0) {
+            xmlnodes.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            xmlnodes.append("<nodes>");
+            for (int i = 0; i < list.size(); i++) {
+            	MibObject mo = (MibObject) list.get(i);
+            	treeNodes.setId(i);
+            	treeNodes.setParentId(mo.getParent().replaceAll("[.]", ""));
+                treeNodes.setNodeName(mo.getName());
+                treeNodes.setNodeId(mo.getValue().replaceAll("[.]", ""));
+                treeNodes.setValue(mo.getValue());
+                treeNodes.setSyntax(mo.getSyntax());
+            // treeNodes.setDesc(mo.getDesc());
+                xmlnodes.append("<node nodeId='" + treeNodes.getNodeId() + "' parentId='" + treeNodes.getParentId()
+                    + "' desc='" + treeNodes.getDesc() + "' syntax='" + treeNodes.getSyntax() + "' value='"
+                    + treeNodes.getValue() + "'>" + treeNodes.getNodeName() + "</node>");
+            }
+            xmlnodes.append("</nodes>");
+    	}
+    
+    	return xmlnodes.toString();
+    }
+/**
+ * 
+ * Description:list转json字符串 <br> 
+ *  
+ * @author XXX<br>
+ * @param list 
+ * @return <br>
+ */
+    public static String mibList2Json(List<MibObject> list) {
+    	JSONArray json = JSONArray.fromObject(list);
+    	return json.toString();
+    }
 }

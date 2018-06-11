@@ -293,9 +293,6 @@ function pageInit() {
 			repeatitems : false
 
 		},
-		onCellSelect : function(rowid, iCol, cellcontent, e) {
-
-		},
 		beforeEditCell : function(rowid, cellname, v, iRow, iCol) {
 			lastrow = iRow;
 			lastcell = iCol;
@@ -360,7 +357,9 @@ function saveRows() {
 	search["port"] = $('#port').val();
 	search["timeout"] = $('#timeout').val();
 	search["retransmits"] = $('#retransmits').val();
-	search["data"] = getFormJosn();
+	search["nonRepeaters"] = $('#nonRepeaters').val();
+	search["maxRepetitions"] = $('#maxRepetitions').val();
+	search["data"] = getFormJson();
 
 	// Data=
 	var jsonParam = JSON.stringify(search);
@@ -396,7 +395,7 @@ function saveRows() {
 	// }
 }
 
-function getFormJosn() {
+function getFormJson() {
 	var tmp = [];
 	var Data = "";
 	// 获取当前表格的所有数据
@@ -450,7 +449,7 @@ function tableView() {
 		timeout : 600000,
 		success : function(data) {
 			// ShowDiv('tableMainProduct');
-			if(eval(data.result).length==0){
+			if (eval(data.result).length == 0) {
 				alert("There is no data in the table");
 				return;
 			}
@@ -465,10 +464,15 @@ function tableView() {
 	})
 }
 // 创建绑定到jqGrid的数据
+var viewlastrow, viewlastcell;
+var tablejsonvar=[];
+var accessvar = {};
+var syntaxvar = {};
 function createJqgridJson(str) {
 	var names = [];
 	var model = [];
 	var jsons = [];
+	
 	var j = {};
 	// 构造jqgri表头
 	names.push("instance");
@@ -482,11 +486,14 @@ function createJqgridJson(str) {
 				if (treeJson[i].id == tree.aNodes[n].id) {
 					if (treeJson[i].isTableColumn == true) {
 						names.push(treeJson[i].name);
+						accessvar[treeJson[i].name] = treeJson[i].access;
+						syntaxvar[treeJson[i].name] = treeJson[i].syntax;
 					}
 				}
 			}
 		}
 	}
+	// names.push("access");
 	// str是后台返回的查询结果，需要对其进行解析，并重新组成json，绑定到jqgrid
 	var jsonStr = eval('(' + str + ')');
 	// 因snmp4j的table功能返回的数据是按照一列一列返回，在后台封装时，将列号放入到了desc字段中，前台进行解析
@@ -513,6 +520,8 @@ function createJqgridJson(str) {
 				for (var k = nameCount; k < names.length; k++) {
 					if (k == names.length - 1) {
 						j[names[k]] = jsonStr[index1].value;
+						j["oid"+names[k]]=jsonStr[index1].oid;
+						j["update"]="0";
 						nameCount++;
 						jstr += JSON.stringify(j) + ",";
 						breakFlag = true;
@@ -520,6 +529,7 @@ function createJqgridJson(str) {
 					}
 
 					j[names[k]] = jsonStr[index1].value;
+					j["oid"+names[k]]=jsonStr[index1].oid;
 					nameCount++;
 					break;
 
@@ -542,12 +552,14 @@ function createJqgridJson(str) {
 		});
 	});
 	// 创建jqGrid组件
-
+	
 	jQuery("#viewTable").jqGrid({
 		datatype : "json", // 请求数据返回的类型。可选json,xml,txt
 		colNames : name, // jqGrid的列显示名字
 		colModel : model,
 		height : 380,
+		cellEdit : true,
+		cellsubmit : "clientArray",
 		// rowNum : 50, // 一页显示多少条
 		// rowList : [ 10, 20, 30 ], // 可供用户选择一页显示多少条
 		pager : '#viewpager', // 表格页脚的占位符(一般是div)的id
@@ -555,19 +567,86 @@ function createJqgridJson(str) {
 		sortorder : "", // 排序方式,可选desc,asc
 		// mtype : "post", // 向后台请求数据的ajax的类型。可选post,get
 		viewrecords : true,
-	// caption : "Table View" // 表格的标题名字
+		// caption : "Table View" // 表格的标题名字
+		beforeEditCell : function(rowid, cellname, v, iRow, iCol) {
+			viewlastrow = iRow;
+			viewlastcell = iCol;
+			 $("#viewTable").jqGrid('setCell', rowid, 'update', '1', 'not-editable-cell'); 
+		}
 	});
 	// 将jqdata的值循环添加进jqGrid
 	for (var i = 0; i <= jqdata.length; i++) {
 		jQuery("#viewTable").jqGrid('addRowData', i + 1, jqdata[i]);
 	}
+	var grid = $("#viewTable");
+	// 获取表格的初始话model
+	// var colModel = grid.jqGrid().getGridParam("colModel") ;
+	var colModel = $('#viewTable').jqGrid('getGridParam', 'colModel');
+	var cellLenth = colModel.length;
+	// 设置所有列可编辑（如果行数据添加后，只有默认的几列是可修改的，这样做吧）
+	for (var i = 1; i < cellLenth; i++) {
+		if (accessvar[colModel[i].name] == "read-write")
+			colModel[i].editable = true;
+			
+	}
 
 }
-//动态生成grid前，清空jgrid数据
+// 动态生成grid前，清空jgrid数据
 function deleteAll() {
 
 	// document.getElementById("viewTable").innerHTML = "";
 	jQuery("#viewTable").html("");
 	$.jgrid.gridUnload("viewTable");
 
+}
+// table中的数据修改后保存
+function saveTable() {
+	$("#viewTable").jqGrid("saveCell", viewlastrow, viewlastcell);
+	var search = {};
+	search["setCommunity"] = $('#setCommunity').val();
+	search["host"] = $('#host').val();
+	search["version"] = getVersionValue();
+	search["oid"] = $('#oid').val();
+	search["port"] = $('#port').val();
+	search["timeout"] = $('#timeout').val();
+	search["retransmits"] = $('#retransmits').val();
+	search["nonRepeaters"] = $('#nonRepeaters').val();
+	search["maxRepetitions"] = $('#maxRepetitions').val();
+	search["access"]=JSON.stringify(accessvar);
+	search["syntax"]=JSON.stringify(syntaxvar);
+	search["data"] = getViewTableJson();
+
+	// Data=
+	var jsonParam = JSON.stringify(search);
+	$.ajax({
+		type : 'POST',
+		url : '/api/snmpTableBatchSet',
+		contentType : "application/json",
+		dataType : 'json', // 接受数据格式
+		data : jsonParam,
+		success : function(data) {
+			alert("over");
+		}
+	});
+
+}
+function getViewTableJson() {
+	var tmp = [];
+	var Data = "";
+	// 获取当前表格的所有数据
+	var o = jQuery("#viewTable");
+	// 获取当前显示的数据
+	var rows = o.jqGrid('getRowData');
+	var rowNum = o.jqGrid('getGridParam', 'rowNum'); // 获取显示配置记录数量
+	var total = o.jqGrid('getGridParam', 'records'); // 获取查询得到的总记录数量
+	// 设置rowNum为总记录数量并且刷新jqGrid，使所有记录现出来调用getRowData方法才能获取到所有数据
+	o.jqGrid('setGridParam', {
+		rowNum : total
+	}).trigger('reloadGrid');
+	var rows = o.jqGrid('getRowData'); // 此时获取表格所有匹配的
+	o.jqGrid('setGridParam', {
+		rowNum : rowNum
+	}).trigger('reloadGrid'); // 还原原来显示的记录数量
+	// return rows;
+	return rows;
 }

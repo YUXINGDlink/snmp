@@ -132,8 +132,4 @@ public class MibObject {
         this.isTableColumn = isTableColumn;
     }
 
-    public void setTableColumn(boolean isTableColumn) {
-        this.isTableColumn = isTableColumn;
-    }
-
 }

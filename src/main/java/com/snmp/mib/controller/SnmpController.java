@@ -209,6 +209,7 @@ public class SnmpController {
         result.setResult(snmpStr);
         result.setMsg("success");
     	return ResponseEntity.ok(result);
+    	
     }
 
 	/**
@@ -236,5 +237,37 @@ public class SnmpController {
         result.setResult(snmpStr);
         result.setMsg("success");
         return ResponseEntity.ok(result);
+    }
+    
+    /**
+     * 
+     * Description: <br> snmp批量set
+     *  
+     * @author yx<br>
+     * @param jsonParam 前台传入要处理的数据
+     * @param errors 错误
+     * @return <br>
+     */
+    // @PostMapping("/api/snmpBatchSet")
+    @ResponseBody
+    @RequestMapping(value = "/api/snmpTableBatchSet", method = RequestMethod.POST, 
+        produces = "application/json;charset=UTF-8")  
+    public ResponseEntity<?> snmpTableBatchSet(@RequestBody JSONObject jsonParam, Errors errors) {
+    
+        AjaxResponseBody result = new AjaxResponseBody();
+        // return result.toJSONString();
+    // If error, just return a 400 bad request, along with the error message
+        if (errors.hasErrors()) {
+            result.setMsg(
+                    errors.getAllErrors().stream().map(x -> x.getDefaultMessage()).collect(Collectors.joining(",")));
+            return ResponseEntity.badRequest().body(result);
+        
+        }
+        SnmpDataService snmpData = new SnmpDataService();
+        String snmpStr = snmpData.tableBatchSet(jsonParam.toString());
+        result.setResult(snmpStr);
+        result.setMsg("success");
+        return ResponseEntity.ok(result);
+        
     }
 }

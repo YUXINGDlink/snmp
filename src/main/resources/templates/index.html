@@ -48,7 +48,7 @@
 						<input id="isLeaf" name="isleaf" type="hidden"/>
 						<input id="nodeName" name="nodeName" type="hidden"/>
 					<br/>
-					<label>Host</label> <input type="text" id="host" name="host" value="172.18.192.252">
+					<label>Host</label> <input type="text" id="host" name="host" value="127.0.0.1">
 					 <label>Operations</label>
 					<select name="operation" id="operation" onchange="doSelectOper();">
 						<option value="1">get</option>
@@ -212,6 +212,8 @@
 		        <table id="viewTable"></table> 
 		        <div id="viewpager"></div>           
 		    </div>
+		      <button type="button" id="bth-tablesave"  onclick="saveTable();"
+                        class="btn btn-primary btn-lg">save</button>
 					<button type="button" id="bth-tableview"  onclick="CloseDiv('tableMainProduct','tableFade');deleteAll();"
 						class="btn btn-primary btn-lg">close</button>
 	</div>

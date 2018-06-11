@@ -32,18 +32,6 @@ public class FileUploadController {
 
 	/**
 	 * 
-	 * Description: <br> 文件上传
-	 *  
-	 * @author yx<br>
-	 * @return <br>
-	 */
-    @RequestMapping(value = "/upload", method = RequestMethod.GET)
-	public String upload() {
-	return "/fileupload";
-    }
-
-	/**
-	 * 
 	 * Description: <br> 
 	 *  
 	 * @author yx<br>
