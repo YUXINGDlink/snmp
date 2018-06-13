@@ -7,6 +7,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.adventnet.snmp.mibs.MibException;
+import com.adventnet.snmp.mibs.MibNode;
+import com.adventnet.snmp.mibs.MibOperations;
 import com.snmp.mib.model.MibObject;
 import com.snmp.mib.model.Nodes;
 
@@ -41,6 +44,13 @@ public class MibParser {
 	 */
     @SuppressWarnings({ "unchecked" })
     public List doMibParser(String filePath) throws IOException, MibLoaderException {
+        MibOperations mibOps = new MibOperations();
+        try {
+            mibOps.loadMibModules(filePath);
+        } catch (MibException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     	// String filePath = "f:/aabak/Bridge.mib";
     	File file = new File(filePath);
     	MibLoader ml = new MibLoader();
@@ -67,7 +77,13 @@ public class MibParser {
                     sot = (SnmpObjectType) mvs.getType();
             	}
             	if (sot != null) {
-                    syntax = sot.getSyntax().getName();
+//                    
+                    MibNode node = mibOps.getMibNode(mvs.getName());//sysDescr.0
+                    if(node.getSyntax()==null) {
+                        syntax = sot.getSyntax().getName();
+                    }else {
+                        syntax= node.getSyntax().toString();
+                    }
                     access = sot.getAccess().toString();
                     status = sot.getStatus().toString();
                     desc = sot.getDescription().toString();
@@ -79,25 +95,24 @@ public class MibParser {
                 MibValue value = mvs.getValue();
                 MibValueSymbol parent = mvs.getParent();
                 String parentValue = "";
-//                System.err.println("name==" + name);
-//                System.err.println("value==" + value);
-//                System.err.println("isTableColumn==" + isTableColumn);
+                System.err.println("name==" + name);
+                System.err.println("value==" + value);
+                System.err.println("isTableColumn==" + isTableColumn);
                 if (parent != null) {
                     parentValue = parent.getValue().toString();
-//                    if (parent.getParent() == null) {
-//                    	System.err.println("supperParentName======" + mibName);
-//                    	System.err.println("supperParentValue=====" + parentValue);
-                    // parent=root
+                    if (parent.getParent() == null) {
+                    	System.err.println("supperParentName======" + mibName);
+                    	System.err.println("supperParentValue=====" + parentValue);
                     
-//                    }
-//                    System.err.println("parentName=" + parent.getName());
-//                    System.err.println("parentValue=" + parent.getValue());
+                    }
+                    System.err.println("parentName=" + parent.getName());
+                    System.err.println("parentValue=" + parent.getValue());
                 
                 } 
-//                System.err.println("syntax=" + syntax);
-//                System.err.println("access=" + access);
-//                System.err.println("status=" + status);
-//                System.err.println("-------------------------------------");
+                System.err.println("syntax=" + syntax);
+                System.err.println("access=" + access);
+                System.err.println("status=" + status);
+                System.err.println("-------------------------------------");
                 
                 mo.setName(name);
                 //mo.setValue(value.toString());

@@ -85,6 +85,25 @@ public interface Snmp4jInterface {
      * @return <br>
      */
     String getList(SearchCriteria search, List<String> oidList);
+    /**
+     * 
+     * Description:tableview中的批量set功能 <br> 
+     *  
+     * @author yx<br>
+     * @param jsonParam 
+     * @return string
+     * @throws IOException  <br>
+     */
+    String tableBatchSet(String jsonParam) throws IOException;
     
-     
+    /**
+     * 
+     * Description:多变量的批量set功能 <br> 
+     *  
+     * @author yx<br>
+     * @param jsonParam 
+     * @return string
+     * @throws IOException  <br>
+     */
+    String batchSet(String jsonParam) throws IOException;
 }

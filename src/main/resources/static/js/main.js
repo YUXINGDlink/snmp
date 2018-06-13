@@ -6,20 +6,6 @@ $(document).ready(function() {
 		fire_ajax_submit();
 	});
 });
-// var setting = {
-// data: {
-// key: {
-// title:"t"
-// },
-// simpleData: {
-// enable: true
-// }
-// },
-// callback: {
-// beforeClick: beforeClick,
-// onClick: onClick
-// }
-// };
 
 function showLog(str) {
 	if (!log)
@@ -171,16 +157,17 @@ function onClickTreeNode(oid) {
 
 	});
 }
-
+//当操作选择set时，setvalue可输入数据
 function doSelectOper() {
 	if ($("#operation").val() == 3) {
 		$("#setValue").attr("disabled", false);
+	}else{
+		$("#setValue").attr("disabled", true);
 	}
 
 }
-
+//右键菜单，未实现
 function rightMouse() {
-	alert(1);
 }
 
 // 弹出隐藏层
@@ -246,59 +233,68 @@ var lastrow, lastcell;
 
 function pageInit() {
 	jQuery("#setTable").jqGrid("clearGridData");
-	var setTableGrid = $("#setTable").jqGrid({
-		width : 930,
-		dataType : 'local',
-		cellEdit : true,
-		cellsubmit : "clientArray",
-		colNames : [ "id", "Name", "Syntax", "Value", "oid", "access" ],
-		colModel : [
-		// {name:"rowid",index:"rowid",align:'center'},
-		{
-			name : "id",
-			index : "id",
-			align : 'center'
-		}, {
-			name : "name",
-			index : "name",
-			align : 'center'
-		}, {
-			name : "syntax",
-			index : "syntax",
-			align : 'center'
-		}, {
-			name : "value",
-			index : "value",
-			align : 'center',
-			editable : true
-		}, {
-			name : "oid",
-			index : "oid",
-			align : 'center'
-		}, {
-			name : "access",
-			index : "access",
-			align : 'center'
-		} ],
+	var setTableGrid = $("#setTable").jqGrid(
+			{
+				width : 930,
+				dataType : 'local',
+				cellEdit : true,
+				cellsubmit : "clientArray",
+				colNames : [ "id", "Name", "Syntax", "Value", "oid", "access",
+						"update" ],
+				colModel : [
+				// {name:"rowid",index:"rowid",align:'center'},
+				{
+					name : "id",
+					index : "id",
+					align : 'center'
+				}, {
+					name : "name",
+					index : "name",
+					align : 'center'
+				}, {
+					name : "syntax",
+					index : "syntax",
+					align : 'center'
+				}, {
+					name : "value",
+					index : "value",
+					align : 'center',
+					editable : true
+				}, {
+					name : "oid",
+					index : "oid",
+					align : 'center'
+				}, {
+					name : "access",
+					index : "access",
+					align : 'center'
+				}, {
+					name : "update",
+					index : "update",
+					align : 'center',
+					hidden : true
+				} ],
 
-		viewrecords : true,
-		rowNum : 15,
-		// autoHeight:true,
-		rowList : [ 15, 20, 25, 30 ],
-		jsonReader : {
-			root : "rows",
-			page : "page",
-			total : "total",
-			records : "records",
-			repeatitems : false
+				viewrecords : true,
+				rowNum : 15,
+				// autoHeight:true,
+				rowList : [ 15, 20, 25, 30 ],
+				jsonReader : {
+					root : "rows",
+					page : "page",
+					total : "total",
+					records : "records",
+					repeatitems : false
 
-		},
-		beforeEditCell : function(rowid, cellname, v, iRow, iCol) {
-			lastrow = iRow;
-			lastcell = iCol;
-		},
-		pager : "#addpager",
-	}).navGrid('#addpager', {
+				},
+				beforeEditCell : function(rowid, cellname, v, iRow, iCol) {
+					lastrow = iRow;
+					lastcell = iCol;
+					$("#setTable").jqGrid('setCell', rowid, 'update', '1',
+							'not-editable-cell');
+				},
+				pager : "#addpager",
+			}).navGrid('#addpager', {
 		add : true,
 		edit : true,
 		del : true,
@@ -370,29 +366,11 @@ function saveRows() {
 		dataType : 'json', // 接受数据格式
 		data : jsonParam,
 		success : function(data) {
-			alert("over");
+			alert(data.result);
 		}
 	});
 
-	// var rowid = jQuery("#setTable").jqGrid('getGridParam', 'selrow');
-	// var rowData = jQuery("#setTable").jqGrid('getRowData', rowid);
-	// $('#setTable').jqGrid('saveRow',rowid,
-	// function(result){
-	// if(result.responseText == ""){
-	// return false;
-	// }
-	// $.messager.alert('提示',eval(result.responseText),'info');
-	// return true;
-	// },
-	// "api/batchSet"
-	// );
-
-	// var grid = $("#setTable");
-	// var ids = grid.jqGrid('getDataIDs');
-	//
-	// for (var i = 0; i < ids.length; i++) {
-	// grid.jqGrid('saveRow', ids[i]);
-	// }
+	
 }
 
 function getFormJson() {
@@ -465,14 +443,14 @@ function tableView() {
 }
 // 创建绑定到jqGrid的数据
 var viewlastrow, viewlastcell;
-var tablejsonvar=[];
+var tablejsonvar = [];
 var accessvar = {};
 var syntaxvar = {};
 function createJqgridJson(str) {
 	var names = [];
 	var model = [];
 	var jsons = [];
-	
+
 	var j = {};
 	// 构造jqgri表头
 	names.push("instance");
@@ -520,8 +498,12 @@ function createJqgridJson(str) {
 				for (var k = nameCount; k < names.length; k++) {
 					if (k == names.length - 1) {
 						j[names[k]] = jsonStr[index1].value;
-						j["oid"+names[k]]=jsonStr[index1].oid;
-						j["update"]="0";
+						if(accessvar[names[k]] == "read-write"){
+							j["oid" + names[k]] = jsonStr[index1].oid;
+						}else{
+							j["oid" + names[k]]="";
+						}
+						j["update"] = "0";
 						nameCount++;
 						jstr += JSON.stringify(j) + ",";
 						breakFlag = true;
@@ -529,7 +511,11 @@ function createJqgridJson(str) {
 					}
 
 					j[names[k]] = jsonStr[index1].value;
-					j["oid"+names[k]]=jsonStr[index1].oid;
+					if(accessvar[names[k]] == "read-write"){
+						j["oid" + names[k]] = jsonStr[index1].oid;
+					}else{
+						j["oid" + names[k]]="";
+					}
 					nameCount++;
 					break;
 
@@ -552,28 +538,30 @@ function createJqgridJson(str) {
 		});
 	});
 	// 创建jqGrid组件
-	
-	jQuery("#viewTable").jqGrid({
-		datatype : "json", // 请求数据返回的类型。可选json,xml,txt
-		colNames : name, // jqGrid的列显示名字
-		colModel : model,
-		height : 380,
-		cellEdit : true,
-		cellsubmit : "clientArray",
-		// rowNum : 50, // 一页显示多少条
-		// rowList : [ 10, 20, 30 ], // 可供用户选择一页显示多少条
-		pager : '#viewpager', // 表格页脚的占位符(一般是div)的id
-		sortname : '', // 初始化的时候排序的字段
-		sortorder : "", // 排序方式,可选desc,asc
-		// mtype : "post", // 向后台请求数据的ajax的类型。可选post,get
-		viewrecords : true,
-		// caption : "Table View" // 表格的标题名字
-		beforeEditCell : function(rowid, cellname, v, iRow, iCol) {
-			viewlastrow = iRow;
-			viewlastcell = iCol;
-			 $("#viewTable").jqGrid('setCell', rowid, 'update', '1', 'not-editable-cell'); 
-		}
-	});
+
+	jQuery("#viewTable").jqGrid(
+			{
+				datatype : "json", // 请求数据返回的类型。可选json,xml,txt
+				colNames : name, // jqGrid的列显示名字
+				colModel : model,
+				height : 380,
+				cellEdit : true,
+				cellsubmit : "clientArray",
+				// rowNum : 50, // 一页显示多少条
+				// rowList : [ 10, 20, 30 ], // 可供用户选择一页显示多少条
+				pager : '#viewpager', // 表格页脚的占位符(一般是div)的id
+				sortname : '', // 初始化的时候排序的字段
+				sortorder : "", // 排序方式,可选desc,asc
+				// mtype : "post", // 向后台请求数据的ajax的类型。可选post,get
+				viewrecords : true,
+				// caption : "Table View" // 表格的标题名字
+				beforeEditCell : function(rowid, cellname, v, iRow, iCol) {
+					viewlastrow = iRow;
+					viewlastcell = iCol;
+					$("#viewTable").jqGrid('setCell', rowid, 'update', '1',
+							'not-editable-cell');
+				}
+			});
 	// 将jqdata的值循环添加进jqGrid
 	for (var i = 0; i <= jqdata.length; i++) {
 		jQuery("#viewTable").jqGrid('addRowData', i + 1, jqdata[i]);
@@ -585,11 +573,14 @@ function createJqgridJson(str) {
 	var cellLenth = colModel.length;
 	// 设置所有列可编辑（如果行数据添加后，只有默认的几列是可修改的，这样做吧）
 	for (var i = 1; i < cellLenth; i++) {
-		if (accessvar[colModel[i].name] == "read-write")
+		if (accessvar[colModel[i].name] == "read-write") {
 			colModel[i].editable = true;
-			
+		}
+		if(colModel[i].name.substring(0,3)=="oid"){
+			jQuery("#viewTable").setGridParam().hideCol(colModel[i].name).trigger("reloadGrid");
+		}
 	}
-
+	jQuery("#viewTable").setGridParam().hideCol("update").trigger("reloadGrid");
 }
 // 动态生成grid前，清空jgrid数据
 function deleteAll() {
@@ -612,8 +603,8 @@ function saveTable() {
 	search["retransmits"] = $('#retransmits').val();
 	search["nonRepeaters"] = $('#nonRepeaters').val();
 	search["maxRepetitions"] = $('#maxRepetitions').val();
-	search["access"]=JSON.stringify(accessvar);
-	search["syntax"]=JSON.stringify(syntaxvar);
+	search["access"] = JSON.stringify(accessvar);
+	search["syntax"] = JSON.stringify(syntaxvar);
 	search["data"] = getViewTableJson();
 
 	// Data=
@@ -625,7 +616,7 @@ function saveTable() {
 		dataType : 'json', // 接受数据格式
 		data : jsonParam,
 		success : function(data) {
-			alert("over");
+			alert(data.result);
 		}
 	});
 
