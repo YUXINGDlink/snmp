@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.snmp.mib.model.AjaxResponseBody;
-import com.snmp.mib.model.MibObject;
 import com.snmp.mib.model.SearchCriteria;
 import com.snmp.mib.service.SnmpDataService;
 

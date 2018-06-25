@@ -87,7 +87,9 @@ var treeJson = "";
 function doUpload() {
 	var formData = new FormData($("#uploadForm")[0]);
 	var firstNodes = 0;
-
+	if ($('#file').val().length == 0) {
+		return;
+	}
 	$.ajax({
 		url : '/api/upload',
 		type : 'POST',
@@ -157,16 +159,16 @@ function onClickTreeNode(oid) {
 
 	});
 }
-//当操作选择set时，setvalue可输入数据
+// 当操作选择set时，setvalue可输入数据
 function doSelectOper() {
 	if ($("#operation").val() == 3) {
 		$("#setValue").attr("disabled", false);
-	}else{
+	} else {
 		$("#setValue").attr("disabled", true);
 	}
 
 }
-//右键菜单，未实现
+// 右键菜单，未实现
 function rightMouse() {
 }
 
@@ -370,7 +372,6 @@ function saveRows() {
 		}
 	});
 
-	
 }
 
 function getFormJson() {
@@ -498,10 +499,10 @@ function createJqgridJson(str) {
 				for (var k = nameCount; k < names.length; k++) {
 					if (k == names.length - 1) {
 						j[names[k]] = jsonStr[index1].value;
-						if(accessvar[names[k]] == "read-write"){
+						if (accessvar[names[k]] == "read-write") {
 							j["oid" + names[k]] = jsonStr[index1].oid;
-						}else{
-							j["oid" + names[k]]="";
+						} else {
+							j["oid" + names[k]] = "";
 						}
 						j["update"] = "0";
 						nameCount++;
@@ -511,10 +512,10 @@ function createJqgridJson(str) {
 					}
 
 					j[names[k]] = jsonStr[index1].value;
-					if(accessvar[names[k]] == "read-write"){
+					if (accessvar[names[k]] == "read-write") {
 						j["oid" + names[k]] = jsonStr[index1].oid;
-					}else{
-						j["oid" + names[k]]="";
+					} else {
+						j["oid" + names[k]] = "";
 					}
 					nameCount++;
 					break;
@@ -538,7 +539,7 @@ function createJqgridJson(str) {
 		});
 	});
 	// 创建jqGrid组件
-
+	var editVal;
 	jQuery("#viewTable").jqGrid(
 			{
 				datatype : "json", // 请求数据返回的类型。可选json,xml,txt
@@ -555,16 +556,29 @@ function createJqgridJson(str) {
 				// mtype : "post", // 向后台请求数据的ajax的类型。可选post,get
 				viewrecords : true,
 				// caption : "Table View" // 表格的标题名字
-				beforeEditCell : function(rowid, cellname, v, iRow, iCol) {
+
+				afterEditCell : function(rowid, celname, value, iRow, iCol) {
 					viewlastrow = iRow;
 					viewlastcell = iCol;
-					$("#viewTable").jqGrid('setCell', rowid, 'update', '1',
-							'not-editable-cell');
+					editVal = value;
+				},
+				beforeSaveCell : function(rowid, celname, value, iRow, iCol) {
+					if (editVal != value) {
+						$("#viewTable").jqGrid('setCell', rowid, 'update', '1',
+								'not-editable-cell');
+						$("#viewTable").jqGrid('setCell', rowid, celname, '',
+								{
+									background : 'LightGreen'
+								});
+						$("#bth-tablesave").attr("disabled",false);
+					}
+					editVal = "";
 				}
 			});
 	// 将jqdata的值循环添加进jqGrid
 	for (var i = 0; i <= jqdata.length; i++) {
 		jQuery("#viewTable").jqGrid('addRowData', i + 1, jqdata[i]);
+		// jQuery("#viewTable").jqGrid('setCell',jqdata[i].instance,jqdata[i].ipRouteDest,{color:'red'});
 	}
 	var grid = $("#viewTable");
 	// 获取表格的初始话model
@@ -575,9 +589,15 @@ function createJqgridJson(str) {
 	for (var i = 1; i < cellLenth; i++) {
 		if (accessvar[colModel[i].name] == "read-write") {
 			colModel[i].editable = true;
+			colModel[i].style = "background-color:#ff0000";
+			// grid.jqGrid('setCell',colModel[i],"",{color:'red'});
+			// $("#viewTable").setColProp(colModel[i],{color:'red'});
+			// colModel[i].css("background-color", "pink");
+
 		}
-		if(colModel[i].name.substring(0,3)=="oid"){
-			jQuery("#viewTable").setGridParam().hideCol(colModel[i].name).trigger("reloadGrid");
+		if (colModel[i].name.substring(0, 3) == "oid") {
+			jQuery("#viewTable").setGridParam().hideCol(colModel[i].name)
+					.trigger("reloadGrid");
 		}
 	}
 	jQuery("#viewTable").setGridParam().hideCol("update").trigger("reloadGrid");
@@ -640,4 +660,12 @@ function getViewTableJson() {
 	}).trigger('reloadGrid'); // 还原原来显示的记录数量
 	// return rows;
 	return rows;
+}
+
+function treeInit(){
+	$("#file").val("");
+	tree = new dTree('tree'); 
+	tree.add(0, -1, '<a href="javascript:" oncontextmenu="rightMouse(1);">ISO</a>');
+	tree.draw();
+	
 }

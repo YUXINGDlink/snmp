@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 public class SnmpApplication {
+     
 
     /**
      * 
@@ -23,7 +24,7 @@ public class SnmpApplication {
      * @author yx<br>
      * @param args  <br>
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         SpringApplication.run(SnmpApplication.class, args);
     }   
 }

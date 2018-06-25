@@ -49,7 +49,7 @@ import net.sf.json.JSONObject;
  * 
  * @author yx <br>
  * @version 1.0 <br>
- * @CreateDate 2018年6月8日 <br>
+ * @CreateDate 2018�?6�?8�? <br>
  * @since V1.0 <br>
  * @see com.snmp.mib.service <br>
  */
@@ -77,9 +77,9 @@ public class SnmpDataService implements Snmp4jInterface {
      * @param community 
      * @return <br>
      */
-    public CommunityTarget createDefault(SearchCriteria search, String community) {
+    public CommunityTarget createDefault(SearchCriteria search, final String community) {
         Address address = GenericAddress.parse(DEFAULT_PROTOCOL + ":" + search.getHost() + "/" + search.getPort());
-        Target target = null;
+        Target target;
 
         if (search.getVersion() == 3) {
             snmp.getUSM().addUser(new OctetString(search.getUsername()),
@@ -118,9 +118,9 @@ public class SnmpDataService implements Snmp4jInterface {
      * @param target 
      * @return <br>
      */
-    public PDU createPDU(Target target) {
+    public PDU createPDU(final Target target) {
         PDU request;
-        if (target.getVersion() == 3) {
+        if (target.getVersion() == 2) {
             request = new ScopedPDU();
             ScopedPDU scopedPDU = (ScopedPDU) request;
             OctetString contextEngineId = new OctetString(MPv3.createLocalEngineID());
@@ -226,7 +226,8 @@ public class SnmpDataService implements Snmp4jInterface {
 
             if (response == null) {
                 result = "response is null";
-            } else {
+            }
+            else {
                 if (response.getErrorStatus() == PDU.noError) {
                     Vector<? extends VariableBinding> vbs = response.getVariableBindings();
                     for (VariableBinding vb : vbs) {
@@ -258,7 +259,7 @@ public class SnmpDataService implements Snmp4jInterface {
 
     /**
      * 
-     * Description: 获取列表信息，一次获取多条信息<br>
+     * Description: 获取列表信息，一次获取多条信�?<br>
      * 
      * @author yx<br>
      * @param search
@@ -282,7 +283,7 @@ public class SnmpDataService implements Snmp4jInterface {
             snmp.listen();
             pdu.setType(PDU.GET);
             ResponseEvent respEvent = snmp.send(pdu, target);
-            System.out.println("PeerAddress:" + respEvent.getPeerAddress());
+            System.out.println("PeerAddress:" + respEvent.getPeerAddress()); 
             PDU response = respEvent.getResponse();
             if (response == null) {
                 System.out.println("response is null");
@@ -335,7 +336,7 @@ public class SnmpDataService implements Snmp4jInterface {
             pdu.add(new VariableBinding(targetOID));
             boolean finished = false;
             while (!finished) {
-                VariableBinding vb = null;
+                VariableBinding vbObject;
                 ResponseEvent respEvent = snmp.getNext(pdu, target);
                 PDU response = respEvent.getResponse();
                 if (null == response) {
@@ -344,15 +345,15 @@ public class SnmpDataService implements Snmp4jInterface {
                     break;
                 }
                 else {
-                    vb = response.get(0);
+                    vbObject = response.get(0);
                 }
                 // walk命令是否完成
-                finished = checkWalkFinished(targetOID, pdu, vb);
+                finished = checkWalkFinished(targetOID, pdu, vbObject);
                 if (!finished) {
-                    System.out.println(vb.getOid() + " = " + vb.getVariable());
-                    result += vb.getOid() + " = " + vb.getVariable() + "\n";
+                    System.out.println(vbObject.getOid() + " = " + vbObject.getVariable());
+                    result += vbObject.getOid() + " = " + vbObject.getVariable() + "\n";
                     pdu.setRequestID(new Integer32(0));
-                    pdu.set(0, vb);
+                    pdu.set(0, vbObject);
                 }
                 else {
                     System.out.println("SNMP walk has finished.");
@@ -430,7 +431,6 @@ public class SnmpDataService implements Snmp4jInterface {
     @Override
     public String set(SearchCriteria search) throws IOException {
         CommunityTarget target = createDefault(search, search.getSetCommunity());
-        String result = "";
         DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
         snmp = new Snmp(transport);
         snmp.listen();
@@ -439,6 +439,7 @@ public class SnmpDataService implements Snmp4jInterface {
         pdu.setType(PDU.SET);
         ResponseEvent resEvt = snmp.send(pdu, target);
         PDU response = resEvt.getResponse();
+        String result = "";
         if (response == null) {
             result = "response is null";
         }
@@ -446,12 +447,12 @@ public class SnmpDataService implements Snmp4jInterface {
             if (response.getErrorIndex() == PDU.noError && response.getErrorStatus() == PDU.noError) {// 判断返回报文是否正确
                 VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
                 Variable var = vb.getVariable();
-                if (search.getSetValue().equals(var.toString())) {// 比较返回值和设置值
-                    System.out.println("SET操作成功 ！");
+                if (search.getSetValue().equals(var.toString())) {// 比较返回值和设置�?
+                    System.out.println("SET操作成功 ");
                     result = "SET操作成功 !";
                 }
                 else {
-                    System.out.println("SET操作失败 ！");
+                    System.out.println("SET操作失败 ");
                     result = "SET操作失败 !";
                 }
             }
@@ -486,7 +487,7 @@ public class SnmpDataService implements Snmp4jInterface {
         List<MibObject> moList = new ArrayList();
         int columnCount = 0;
         try {
-            // 实例化接口
+            // 实例化接�?
             DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
             snmp = new Snmp(transport);
             // 监听
@@ -499,9 +500,9 @@ public class SnmpDataService implements Snmp4jInterface {
             List<TableEvent> rowvalues = utils.getTable(target, columnOIDs, new OID("0"), new OID("50"));
             int columnTemp = 0;
             for (int i = 0; i < rowvalues.size(); i++) {
-                // 取list中的一行
+                // 取list中的�?�?
                 TableEvent te = (TableEvent) rowvalues.get(i);
-                // 对每一行结果进行再次拆分
+                // 对每�?行结果进行再次拆�?
                 VariableBinding[] vb = te.getColumns();
                 if (vb != null) {
                     for (int j = 0; j < vb.length; j++) {
@@ -509,9 +510,9 @@ public class SnmpDataService implements Snmp4jInterface {
                                 + vb[j].getVariable().getSyntaxString();
 
                         MibObject mo = new MibObject();
-                        String instanceId = vb[j].getOid().toString().replaceAll(search.getOid() + ".", "");
-                        if (columnTemp != Integer.valueOf(instanceId.substring(0, instanceId.indexOf(".")))) {
-                            columnTemp = Integer.valueOf(instanceId.substring(0, instanceId.indexOf(".")));
+                        String instanceId = vb[j].getOid().toString().replaceAll(search.getOid() + '.', "");
+                        if (columnTemp != Integer.valueOf(instanceId.substring(0, instanceId.indexOf('.')))) {
+                            columnTemp = Integer.valueOf(instanceId.substring(0, instanceId.indexOf('.')));
                             columnCount++;
                         }
                         mo.setDesc(instanceId.substring(0, instanceId.indexOf(".")));
@@ -524,7 +525,7 @@ public class SnmpDataService implements Snmp4jInterface {
                     }
                 }
                 else {
-                    throw new NullPointerException("被监控系统的网络不通或IP或其它相关配置错误！");
+                    throw new NullPointerException("被监控系统的网络相关配置错误！");
                 }
                 result += "\n";
             }
@@ -543,7 +544,7 @@ public class SnmpDataService implements Snmp4jInterface {
      * 
      * @author snmp4j 批量set功能<br>
      * @param jsonParam
-     *            需要进行set操作的数据
+     *            �?要进行set操作的数�?
      * @return <br>
      */
     @Override
@@ -557,7 +558,7 @@ public class SnmpDataService implements Snmp4jInterface {
             return result;
         }
         JSONObject obj = new JSONObject().fromObject(jsonParam);
-        // 开始构造SearchCriteria
+        // �?始构造SearchCriteria
         SearchCriteria search = new SearchCriteria();
         search.setHost(obj.get("host").toString());
         search.setVersion(Integer.valueOf(obj.get("version").toString()));
@@ -702,14 +703,14 @@ public class SnmpDataService implements Snmp4jInterface {
             // 操作类型
             pdu.setType(PDU.GETBULK);
             // snmp getBulk独有
-            pdu.setMaxRepetitions(search.getMaxRepetitions()); // 每个OID通过GETBULK方式获取多少个数据
+            pdu.setMaxRepetitions(search.getMaxRepetitions()); // 每个OID通过GETBULK方式获取多少个数�?
             pdu.setNonRepeaters(search.getNonRepeaters());
 
             pdu.add(new VariableBinding(new OID(search.getOid())));
             ResponseEvent responseEvent = snmp.send(pdu, target);
             PDU response = responseEvent.getResponse();
             if (response == null) {
-                System.out.println("TimeOut...");
+                System.out.println("TimeOut..."); 
             } 
             else {
                 if (response.getErrorStatus() == PDU.noError) {
@@ -721,6 +722,7 @@ public class SnmpDataService implements Snmp4jInterface {
                         else {
                             result += vb + " ," + vb.getVariable().getSyntaxString();
                         }
+                        result+="\n";
                     }
                 } 
                 else {
@@ -752,7 +754,7 @@ public class SnmpDataService implements Snmp4jInterface {
      * 
      * @author snmp4j tableview中批量set功能<br>
      * @param jsonParam
-     *            需要进行set操作的数据
+     *            �?要进行set操作的数�?
      * @return <br>
      */
     @Override
@@ -760,13 +762,13 @@ public class SnmpDataService implements Snmp4jInterface {
         String result = "";
         List<MibObject> moList = new ArrayList();
         ParseJson parseJson = new ParseJson();
-        moList = parseJson.json2ListForTable(jsonParam.toString());
+        moList = parseJson.json2ListForTable(jsonParam);
         if(moList.size()==0) {
             result="No data to be saved";
             return result;
         }
         JSONObject obj = new JSONObject().fromObject(jsonParam);
-        // 开始构造SearchCriteria
+        // �?始构造SearchCriteria
         SearchCriteria search = new SearchCriteria();
         search.setHost(obj.get("host").toString());
         search.setVersion(Integer.valueOf(obj.get("version").toString()));

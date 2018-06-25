@@ -47,11 +47,11 @@ public class MibParser {
         MibOperations mibOps = new MibOperations();
         try {
             mibOps.loadMibModules(filePath);
-        } catch (MibException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    	// String filePath = "f:/aabak/Bridge.mib";
+    	
     	File file = new File(filePath);
     	MibLoader ml = new MibLoader();
     	Mib mib = ml.load(file);

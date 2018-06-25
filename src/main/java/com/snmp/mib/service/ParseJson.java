@@ -53,11 +53,10 @@ public class ParseJson {
      * Description: list转换成 json <br>
      * 
      * @author yx<br>
-     * @param list
+     * @param list 
      * @return <br>
      */
     public static JSONArray list2Json(List<MibObject> list) {
-        JSONArray json = new JSONArray();
         JSONArray jsonArr = JSONArray.fromObject(list);
         return jsonArr;
     }

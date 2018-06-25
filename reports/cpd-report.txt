@@ -1,0 +1,909 @@
+Found a 71 line (849 tokens) duplication in the following files: 
+Starting at line 588 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 798 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            else if ("Integer".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Integer32()));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new Integer32(Integer.valueOf(moList.get(i).getValue()))));
+                }
+
+            }
+            else if ("PhysAddress".equals(moList.get(i).getSyntax())
+                    || "NetworkAddress".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new OctetString(moList.get(i).getValue())));
+                }
+
+            }
+            else if ("IpAddress".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
+                } 
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new IpAddress(moList.get(i).getValue())));
+                }
+
+            }
+            else if ("TimeTicks".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new TimeTicks()));
+                } 
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new TimeTicks(Long.valueOf(moList.get(i).getValue()))));
+                }
+            }
+            else if ("Gauge".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Gauge32()));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new Gauge32(Long.valueOf(moList.get(i).getValue()))));
+                }
+
+            } 
+            else if ("Counter".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Counter32()));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new Counter32(Long.valueOf(moList.get(i).getValue()))));
+                }
+
+            }
+
+        }
+        pdu.setType(PDU.SET);
+        ResponseEvent resEvt = snmp.send(pdu, target);
+        PDU response = resEvt.getResponse();
+        if (response == null) {
+            result = "response is null";
+        }
+        else {
+            if (response.getErrorIndex() == PDU.noError && response.getErrorStatus() == PDU.noError) {// 判断返回报文是否正确
+                VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
+=====================================================================
+Found a 34 line (365 tokens) duplication in the following files: 
+Starting at line 555 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 765 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+        moList = parseJson.json2List(jsonParam.toString());
+        if(moList.size()==0) {
+            result="No data to be saved";
+            return result;
+        }
+        JSONObject obj = new JSONObject().fromObject(jsonParam);
+        // �??始构造SearchCriteria
+        SearchCriteria search = new SearchCriteria();
+        search.setHost(obj.get("host").toString());
+        search.setVersion(Integer.valueOf(obj.get("version").toString()));
+        search.setPort(Integer.valueOf(obj.get("port").toString()));
+        search.setTimeout(Integer.valueOf(obj.get("timeout").toString()));
+        search.setRetransmits(Integer.valueOf(obj.get("retransmits").toString()));
+        search.setNonRepeaters(Integer.valueOf(obj.get("nonRepeaters").toString()));
+        search.setMaxRepetitions(Integer.valueOf(obj.get("maxRepetitions").toString()));
+
+        CommunityTarget target = createDefault(search, obj.get("setCommunity").toString());
+        DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
+        snmp = new Snmp(transport);
+        snmp.listen();
+        PDU pdu = createPDU(target);
+        // pdu.add(new VariableBinding(new OID("1.3.6.1.2.1.1.5.0"), new
+        // OctetString("1")));
+        for (int i = 0; i < moList.size(); i++) {
+            if ("DisplayString".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new OctetString("")));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new OctetString(moList.get(i).getValue())));
+                }
+            }
+            else if ("Integer".equals(moList.get(i).getSyntax())) {
+=====================================================================
+Found a 7 line (102 tokens) duplication in the following files: 
+Starting at line 599 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 609 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 809 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 819 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                    || "NetworkAddress".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new OctetString(moList.get(i).getValue())));
+=====================================================================
+Found a 11 line (91 tokens) duplication in the following files: 
+Starting at line 165 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 714 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            }
+            else {
+                if (response.getErrorStatus() == PDU.noError) {
+                    Vector<? extends VariableBinding> vbs = response.getVariableBindings();
+                    for (VariableBinding vb : vbs) {
+                        if ("noSuchInstance".equals(vb.getVariable().toString())) {
+                            result += "Error:" + vb + " ," + vb.getVariable().getSyntaxString();
+                        }
+                        else {
+                            result += vb + " ," + vb.getVariable().getSyntaxString();
+                        }
+=====================================================================
+Found a 15 line (90 tokens) duplication in the following files: 
+Starting at line 213 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 285 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+    public ResponseEntity<?> snmpBatchSet(@RequestBody JSONObject jsonParam, Errors errors) {
+
+        AjaxResponseBody result = new AjaxResponseBody();
+        // return result.toJSONString();
+        // If error, just return a 400 bad request, along with the error message
+        if (errors.hasErrors()) {
+            result.setMsg(
+                    errors.getAllErrors().stream().map(x -> x.getDefaultMessage()).collect(Collectors.joining(",")));
+            return ResponseEntity.badRequest().body(result);
+
+        }
+        SnmpDataService snmpData = new SnmpDataService();
+        String snmpStr = "";
+        try {
+            snmpStr = snmpData.batchSet(jsonParam.toString());
+=====================================================================
+Found a 13 line (87 tokens) duplication in the following files: 
+Starting at line 51 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 83 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 147 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 178 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 252 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+    public ResponseEntity<?> snmpGet(@Valid @RequestBody SearchCriteria search, Errors errors) {
+
+        AjaxResponseBody result = new AjaxResponseBody();
+        // If error, just return a 400 bad request, along with the error message
+        if (errors.hasErrors()) {
+
+            result.setMsg(
+                    errors.getAllErrors().stream().map(x -> x.getDefaultMessage()).collect(Collectors.joining(",")));
+            return ResponseEntity.badRequest().body(result);
+
+        }
+        SnmpDataService snmpData = new SnmpDataService();
+        String snmpStr = snmpData.get(search);
+=====================================================================
+Found a 13 line (85 tokens) duplication in the following files: 
+Starting at line 51 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 83 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 112 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 147 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 178 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 252 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+    public ResponseEntity<?> snmpGet(@Valid @RequestBody SearchCriteria search, Errors errors) {
+
+        AjaxResponseBody result = new AjaxResponseBody();
+        // If error, just return a 400 bad request, along with the error message
+        if (errors.hasErrors()) {
+
+            result.setMsg(
+                    errors.getAllErrors().stream().map(x -> x.getDefaultMessage()).collect(Collectors.joining(",")));
+            return ResponseEntity.badRequest().body(result);
+
+        }
+        SnmpDataService snmpData = new SnmpDataService();
+        String snmpStr = snmpData.get(search);
+=====================================================================
+Found a 13 line (85 tokens) duplication in the following files: 
+Starting at line 112 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 213 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 285 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+    public ResponseEntity<?> snmpSet(@Valid @RequestBody SearchCriteria search, Errors errors) {
+
+        AjaxResponseBody result = new AjaxResponseBody();
+        // If error, just return a 400 bad request, along with the error message
+        if (errors.hasErrors()) {
+            result.setMsg(
+                    errors.getAllErrors().stream().map(x -> x.getDefaultMessage()).collect(Collectors.joining(",")));
+            return ResponseEntity.badRequest().body(result);
+        }
+        SnmpDataService snmpData = new SnmpDataService();
+        String snmpStr = "";
+        try {
+            snmpStr = snmpData.set(search);
+=====================================================================
+Found a 13 line (78 tokens) duplication in the following files: 
+Starting at line 51 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 83 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 147 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 178 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 213 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 252 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 285 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+    public ResponseEntity<?> snmpGet(@Valid @RequestBody SearchCriteria search, Errors errors) {
+
+        AjaxResponseBody result = new AjaxResponseBody();
+        // If error, just return a 400 bad request, along with the error message
+        if (errors.hasErrors()) {
+
+            result.setMsg(
+                    errors.getAllErrors().stream().map(x -> x.getDefaultMessage()).collect(Collectors.joining(",")));
+            return ResponseEntity.badRequest().body(result);
+
+        }
+        SnmpDataService snmpData = new SnmpDataService();
+        String snmpStr = snmpData.get(search);
+=====================================================================
+Found a 15 line (78 tokens) duplication in the following files: 
+Starting at line 145 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 210 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+    public String get(SearchCriteria search) {
+        // 设置 目标
+        CommunityTarget target = createDefault(search, search.getReadCommunity());
+        Snmp snmp = null;
+        String result = "";
+        try {
+            // PDU 对象
+            PDU pdu = createPDU(target);
+            pdu.add(new VariableBinding(new OID(search.getOid())));
+
+            DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
+            snmp = new Snmp(transport);
+            snmp.listen();
+            // 操作类型
+            pdu.setType(PDU.GET);
+=====================================================================
+Found a 35 line (74 tokens) duplication in the following files: 
+Starting at line 176 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 235 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 726 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                    }
+                }
+                else {
+                    result += "Error:" + response.getErrorStatusText();
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("SNMP Exception:" + e);
+        }
+        finally {
+            if (snmp != null) {
+                try {
+                    snmp.close();
+                }
+                catch (IOException ex1) {
+                    snmp = null;
+                }
+            }
+
+        }
+        return result;
+    }
+
+    /**
+     * 
+     * Description: 根据oid获取下一节点信息 <br>
+     * 
+     * @author yx<br>
+     * @param search
+     * @return <br>
+     */
+    @Override
+    public String getNext(SearchCriteria search) {
+=====================================================================
+Found a 3 line (71 tokens) duplication in the following files: 
+Starting at line 579 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 588 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 599 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 609 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 619 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 628 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 638 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 789 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 798 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 809 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 819 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 829 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 838 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 848 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            if ("DisplayString".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new OctetString("")));
+=====================================================================
+Found a 31 line (61 tokens) duplication in the following files: 
+Starting at line 180 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 239 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 295 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 730 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("SNMP Exception:" + e);
+        }
+        finally {
+            if (snmp != null) {
+                try {
+                    snmp.close();
+                }
+                catch (IOException ex1) {
+                    snmp = null;
+                }
+            }
+
+        }
+        return result;
+    }
+
+    /**
+     * 
+     * Description: 根据oid获取下一节点信息 <br>
+     * 
+     * @author yx<br>
+     * @param search
+     * @return <br>
+     */
+    @Override
+    public String getNext(SearchCriteria search) {
+=====================================================================
+Found a 7 line (59 tokens) duplication in the following files: 
+Starting at line 443 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 863 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+        if (response == null) {
+            result = "response is null";
+        }
+        else {
+            if (response.getErrorIndex() == PDU.noError && response.getErrorStatus() == PDU.noError) {// 判断返回报文是否正确
+                VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
+                Variable var = vb.getVariable();
+=====================================================================
+Found a 9 line (56 tokens) duplication in the following files: 
+Starting at line 59 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\Snmp4jFirstDemo.java
+Starting at line 87 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            snmp.getUSM().addUser(new OctetString("MD5DES"),new UsmUser(new OctetString("MD5DES"), AuthMD5.ID,new OctetString("MD5DESUserAuthPassword"),PrivDES.ID, new OctetString("MD5DESUserPrivPassword")));
+            target = new UserTarget();
+            // 设置安全级别
+            ((UserTarget) target).setSecurityLevel(SecurityLevel.AUTH_PRIV);
+            ((UserTarget) target).setSecurityName(new OctetString("MD5DES"));
+            target.setVersion(SnmpConstants.version3);
+        } else {
+            target = new CommunityTarget();
+            if (version == SnmpConstants.version1) {
+=====================================================================
+Found a 10 line (56 tokens) duplication in the following files: 
+Starting at line 160 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 224 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            ResponseEvent respEvent = snmp.send(pdu, target);
+            PDU response = respEvent.getResponse();
+            // 解析Response
+            if (response == null) {
+                result = "response is null";
+            }
+            else {
+                if (response.getErrorStatus() == PDU.noError) {
+                    Vector<? extends VariableBinding> vbs = response.getVariableBindings();
+                    for (VariableBinding vb : vbs) {
+=====================================================================
+Found a 19 line (54 tokens) duplication in the following files: 
+Starting at line 658 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 869 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
+                // Variable var = vb.getVariable();
+                result = "SET操作成功 !";
+
+            }
+            else {
+                try {
+                    result = "错误信息:" + response.getErrorStatusText();
+                    throw new Exception("错误信息:" + response.getErrorStatusText());
+                } 
+                catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        snmp.close();
+        return result;
+    }
+=====================================================================
+Found a 27 line (53 tokens) duplication in the following files: 
+Starting at line 458 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 662 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            }
+            else {
+                try {
+                    result = "错误信息:" + response.getErrorStatusText();
+                    throw new Exception("错误信息:" + response.getErrorStatusText());
+                }
+                catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        snmp.close();
+        return result;
+
+    }
+
+    /**
+     * 
+     * Description: 实现tableView功能 <br>
+     * 
+     * @author XXX<br>
+     * @param search
+     * @return <br>
+     */
+    @Override
+    public String tableView(SearchCriteria search) {
+=====================================================================
+Found a 6 line (51 tokens) duplication in the following files: 
+Starting at line 443 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 653 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+        if (response == null) {
+            result = "response is null";
+        }
+        else {
+            if (response.getErrorIndex() == PDU.noError && response.getErrorStatus() == PDU.noError) {// 判断返回报文是否正确
+                VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
+=====================================================================
+Found a 16 line (49 tokens) duplication in the following files: 
+Starting at line 458 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 872 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            }
+            else {
+                try {
+                    result = "错误信息:" + response.getErrorStatusText();
+                    throw new Exception("错误信息:" + response.getErrorStatusText());
+                }
+                catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        snmp.close();
+        return result;
+
+    }
+=====================================================================
+Found a 8 line (49 tokens) duplication in the following files: 
+Starting at line 581 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 601 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 791 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 811 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new OctetString("")));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new OctetString(moList.get(i).getValue())));
+                }
+            }
+            else if ("Integer".equals(moList.get(i).getSyntax())) {
+=====================================================================
+Found a 6 line (41 tokens) duplication in the following files: 
+Starting at line 222 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 284 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            pdu.setType(PDU.GETNEXT);
+            ResponseEvent respEvent = snmp.send(pdu, target);
+            System.out.println("PeerAddress:" + respEvent.getPeerAddress());
+            PDU response = respEvent.getResponse();
+
+            if (response == null) {
+=====================================================================
+Found a 11 line (40 tokens) duplication in the following files: 
+Starting at line 227 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 299 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+            snmpStr = snmpData.batchSet(jsonParam.toString());
+        }
+        catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        result.setResult(snmpStr);
+        result.setMsg("success");
+        return ResponseEntity.ok(result);
+
+    }
+=====================================================================
+Found a 6 line (38 tokens) duplication in the following files: 
+Starting at line 155 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 281 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
+            snmp = new Snmp(transport);
+            snmp.listen();
+            // 操作类型
+            pdu.setType(PDU.GET);
+            ResponseEvent respEvent = snmp.send(pdu, target);
+=====================================================================
+Found a 23 line (37 tokens) duplication in the following files: 
+Starting at line 124 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 227 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+            snmpStr = snmpData.set(search);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        result.setResult(snmpStr);
+        result.setMsg("success");
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 
+     * Description: <br>
+     * snmpWalk操作
+     * 
+     * @author yx<br>
+     * @param search
+     *            SearchCriteria查询条件认证
+     * @param errors
+     *            错误
+     * @return <br>
+     */
+    @PostMapping("/api/snmpWalk")
+=====================================================================
+Found a 5 line (37 tokens) duplication in the following files: 
+Starting at line 229 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 714 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            }
+            else {
+                if (response.getErrorStatus() == PDU.noError) {
+                    Vector<? extends VariableBinding> vbs = response.getVariableBindings();
+                    for (VariableBinding vb : vbs) {
+=====================================================================
+Found a 15 line (36 tokens) duplication in the following files: 
+Starting at line 185 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 244 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 300 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 368 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 735 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            System.out.println("SNMP Exception:" + e);
+        }
+        finally {
+            if (snmp != null) {
+                try {
+                    snmp.close();
+                }
+                catch (IOException ex1) {
+                    snmp = null;
+                }
+            }
+
+        }
+        return result;
+    }
+=====================================================================
+Found a 9 line (34 tokens) duplication in the following files: 
+Starting at line 124 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 299 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+            snmpStr = snmpData.set(search);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        result.setResult(snmpStr);
+        result.setMsg("success");
+        return ResponseEntity.ok(result);
+    }
+=====================================================================
+Found a 5 line (32 tokens) duplication in the following files: 
+Starting at line 551 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 761 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+    public String batchSet(String jsonParam) throws IOException {
+        String result = "";
+        List<MibObject> moList = new ArrayList();
+        ParseJson parseJson = new ParseJson();
+        moList = parseJson.json2List(jsonParam.toString());
+=====================================================================
+Found a 22 line (30 tokens) duplication in the following files: 
+Starting at line 190 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 263 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+        String snmpStr = snmpData.tableView(search);
+
+        result.setResult(snmpStr);
+        result.setMsg("success");
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 
+     * Description: <br>
+     * snmp批量set
+     * 
+     * @author yx<br>
+     * @param jsonParam
+     *            前台传入要处理的数据
+     * @param errors
+     *            错误
+     * @return <br>
+     */
+    // @PostMapping("/api/snmpBatchSet")
+    @ResponseBody
+    @RequestMapping(value = "/api/snmpBatchSet", method = RequestMethod.POST, 
+=====================================================================
+Found a 5 line (30 tokens) duplication in the following files: 
+Starting at line 590 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 601 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 611 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 621 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 630 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 640 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 800 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 811 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 821 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 831 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 840 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 850 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Integer32()));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new Integer32(Integer.valueOf(moList.get(i).getValue()))));
+=====================================================================
+Found a 5 line (29 tokens) duplication in the following files: 
+Starting at line 433 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 571 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 781 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+        CommunityTarget target = createDefault(search, search.getSetCommunity());
+        DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
+        snmp = new Snmp(transport);
+        snmp.listen();
+        PDU pdu = createPDU(target);
+=====================================================================
+Found a 5 line (29 tokens) duplication in the following files: 
+Starting at line 581 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 590 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 611 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 621 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 630 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 640 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 791 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 800 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 821 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 831 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 840 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 850 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new OctetString("")));
+                }
+                else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new OctetString(moList.get(i).getValue())));
+=====================================================================
+Found a 7 line (28 tokens) duplication in the following files: 
+Starting at line 33 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\ParseJson.java
+Starting at line 73 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\ParseJson.java
+
+    public List<MibObject> json2List(String jsonParam) {
+        List<MibObject> moList = new ArrayList();
+        // 接收{}对象，此处接收数组对象会有异�?
+
+        // 将json字符串转换为json对象
+        JSONObject obj = new JSONObject().fromObject(jsonParam);
+        JSONArray jsonArray = JSONArray.fromObject(obj.get("data").toString());// 把String转换为json
+=====================================================================
+Found a 6 line (28 tokens) duplication in the following files: 
+Starting at line 272 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 693 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+    public String getList(SearchCriteria search, List<String> oidList) {
+        CommunityTarget target = createDefault(search, search.getReadCommunity());
+        String result = "";
+        try {
+            // PDU pdu = new PDU();
+            PDU pdu = createPDU(target);
+=====================================================================
+Found a 3 line (27 tokens) duplication in the following files: 
+Starting at line 439 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 650 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 860 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+        pdu.setType(PDU.SET);
+        ResponseEvent resEvt = snmp.send(pdu, target);
+        PDU response = resEvt.getResponse();
+=====================================================================
+Found a 20 line (26 tokens) duplication in the following files: 
+Starting at line 63 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 93 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+Starting at line 158 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\controller\SnmpController.java
+
+        String snmpStr = snmpData.get(search);
+
+        result.setResult(snmpStr);
+        result.setMsg("success");
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 
+     * Description: <br>
+     * snmpGetNext操作
+     * 
+     * @author yx<br>
+     * @param search
+     *            SearchCriteria查询条件认证
+     * @param errors
+     *            错误
+     * @return <br>
+     */
+    @PostMapping("/api/snmpGetnext")
+=====================================================================
+Found a 11 line (26 tokens) duplication in the following files: 
+Starting at line 69 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\model\MibObject.java
+Starting at line 73 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\model\Nodes.java
+
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getParent() {
+=====================================================================
+Found a 11 line (26 tokens) duplication in the following files: 
+Starting at line 85 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\model\MibObject.java
+Starting at line 81 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\model\Nodes.java
+
+    }
+
+    public String getSyntax() {
+        return syntax;
+    }
+
+    public void setSyntax(String syntax) {
+        this.syntax = syntax;
+    }
+
+    public String getStatus() {
+=====================================================================
+Found a 7 line (26 tokens) duplication in the following files: 
+Starting at line 153 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 218 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 699 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            pdu.add(new VariableBinding(new OID(search.getOid())));
+
+            DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
+            snmp = new Snmp(transport);
+            snmp.listen();
+            // 操作类型
+            pdu.setType(PDU.GET);
+=====================================================================
+Found a 2 line (26 tokens) duplication in the following files: 
+Starting at line 580 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 583 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 603 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 790 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 793 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 813 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new OctetString("")));
+=====================================================================
+Found a 2 line (26 tokens) duplication in the following files: 
+Starting at line 589 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 592 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 799 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 802 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Integer32()));
+=====================================================================
+Found a 2 line (26 tokens) duplication in the following files: 
+Starting at line 600 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 610 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 613 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 810 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 820 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 823 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
+=====================================================================
+Found a 2 line (26 tokens) duplication in the following files: 
+Starting at line 620 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 623 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 830 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 833 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new TimeTicks()));
+=====================================================================
+Found a 2 line (26 tokens) duplication in the following files: 
+Starting at line 629 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 632 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 839 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 842 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Gauge32()));
+=====================================================================
+Found a 2 line (26 tokens) duplication in the following files: 
+Starting at line 639 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 642 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 849 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 852 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Counter32()));
+=====================================================================
+Found a 4 line (25 tokens) duplication in the following files: 
+Starting at line 69 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\Snmp4jFirstDemo.java
+Starting at line 98 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+                ((CommunityTarget) target).setCommunity(new OctetString("public"));
+            } else {
+                target.setVersion(SnmpConstants.version2c);
+                ((CommunityTarget) target).setCommunity(new OctetString("public"));
+=====================================================================
+Found a 11 line (25 tokens) duplication in the following files: 
+Starting at line 117 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\model\MibObject.java
+Starting at line 97 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\model\SearchCriteria.java
+
+    }
+
+    public String getOid() {
+        return oid;
+    }
+
+    public void setOid(String oid) {
+        this.oid = oid;
+    }
+
+    public boolean getIsTableColumn() {
+=====================================================================
+Found a 4 line (25 tokens) duplication in the following files: 
+Starting at line 219 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 281 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+Starting at line 700 of F:\Users\yx\springboot\snmp\src\main\java\com\snmp\mib\service\SnmpDataService.java
+
+            DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
+            snmp = new Snmp(transport);
+            snmp.listen();
+            pdu.setType(PDU.GETNEXT);
