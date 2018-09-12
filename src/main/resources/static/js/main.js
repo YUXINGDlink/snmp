@@ -41,6 +41,10 @@ function fire_ajax_submit() {
 	search["authPass"] = $('#authPass').val();
 	var operationvar = $('#operation').val();
 	var url = "";
+	$("#setDiv").hide();
+	$("#resultDiv").show();
+	$("#tableDiv").hide();
+	$("#bth-getlist").attr("disabled",true);
 	if (operationvar == 1) {
 		url = "/api/snmpGet"
 	} else if (operationvar == 2) {
@@ -100,7 +104,7 @@ function doUpload() {
 		contentType : false,
 		processData : false,
 		success : function(data) {
-			treeJson = data;
+			treeJson=mergeJsonObject(treeJson,data);
 			var tt = "";
 			var firstNodes = 0;
 			$.each(data, function(index) {
@@ -110,19 +114,33 @@ function doUpload() {
 				var parentId = data[index].parent;
 				var value = data[index].value;
 				var oid = data[index].oid;
-				var nodeName = data[index].name;
+				var nodeN = data[index].name;
 				var syntax = data[index].syntax;
 				var desc = data[index].desc;
 				if (firstNodes == 0) {
-					tree.add(nodeId, 0, nodeName,
-							"javaScript:onClickTreeNode('" + oid + "');",
-							nodeName, oid, "", "", false);
+					
 					firstNodes = 1;
+					if (i > 0) {
+						tree.add(parseInt(i.toString() + nodeId), 0, nodeN,
+								"javaScript:onClickTreeNode('" + oid + "');",
+								nodeN, oid, "", "", false);
+					} else {
+						tree.add(nodeId, 0, nodeN,
+								"javaScript:onClickTreeNode('" + oid + "');",
+								nodeN, oid, "", "", false);
+					}
 				} else {
+					if (i > 0) {
+						tree.add(parseInt(i.toString() + nodeId),
+								parseInt(i.toString() + parentId),
+								nodeN, "javaScript:onClickTreeNode('" + oid
+										+ "');", nodeN, oid, "", "", false);
 
-					tree.add(nodeId, parentId, nodeName,
-							"javaScript:onClickTreeNode('" + oid + "');",
-							nodeName, oid, "", "", false);
+					} else {
+						tree.add(nodeId, parentId, nodeN,
+								"javaScript:onClickTreeNode('" + oid + "');",
+								nodeN, oid, "", "", false);
+					}
 				}
 			});
 			tree.draw();
@@ -153,11 +171,16 @@ function onClickTreeNode(oid) {
 		if (oid == treeJson[index].oid) {
 			$("#description").val(treeJson[index].desc);
 			$("#syntax").val(treeJson[index].syntax);
-			$("#nodeName").val(treeJson[index].name);
+			$("#nodeN").val(treeJson[index].name);
 			return false;
 		}
 
 	});
+	if ($("#nodeN").val().indexOf("Entry") > 0 || $("#nodeN").val().indexOf("Table") > 0 ) {
+		$("#bth-tableview").attr("disabled", false);
+	}else{
+		$("#bth-tableview").attr("disabled", true);
+	}
 }
 // 当操作选择set时，setvalue可输入数据
 function doSelectOper() {
@@ -232,12 +255,15 @@ function getVersionValue() {
 }
 // grid加载数据
 var lastrow, lastcell;
-
+var editVal;
+var setTableGrid;
+var jqdata;
 function pageInit() {
 	jQuery("#setTable").jqGrid("clearGridData");
-	var setTableGrid = $("#setTable").jqGrid(
+	setTableGrid = $("#setTable").jqGrid(
 			{
-				width : 930,
+				width : "90%",
+				height:260,
 				dataType : 'local',
 				cellEdit : true,
 				cellsubmit : "clientArray",
@@ -248,7 +274,7 @@ function pageInit() {
 				{
 					name : "id",
 					index : "id",
-					align : 'center'
+					align : 'center',hidden:true
 				}, {
 					name : "name",
 					index : "name",
@@ -289,20 +315,23 @@ function pageInit() {
 					repeatitems : false
 
 				},
-				beforeEditCell : function(rowid, cellname, v, iRow, iCol) {
+				afterEditCell : function(rowid, celname, value, iRow, iCol) {
 					lastrow = iRow;
 					lastcell = iCol;
-					$("#setTable").jqGrid('setCell', rowid, 'update', '1',
-							'not-editable-cell');
+					editVal = value;
 				},
-				pager : "#addpager",
-			}).navGrid('#addpager', {
-		add : true,
-		edit : true,
-		del : true,
-		search : false,
-		refresh : false
-	});
+				beforeSaveCell : function(rowid, celname, value, iRow, iCol) {
+					if (editVal != value) {
+						$("#setTable").jqGrid('setCell', rowid, 'update', '1',
+						'not-editable-cell');
+						$("#setTable").jqGrid('setCell', rowid, celname, '', {
+							background : 'LightGreen'
+						});
+						$("#bth-batchsetsave").attr("disabled", false);
+					}
+					editVal = "";
+				}
+			});
 	for (var n = 0; n < tree.aNodes.length; n++) {
 		if (document.getElementById("ctree" + tree.aNodes[n].id) == null) {
 			continue;
@@ -342,10 +371,11 @@ function pageInit() {
 					'not-editable-cell');
 		}
 	}
+	getList();
 }
 
 /* 批量Set,提交表单 */
-function saveRows() {
+function saveMultiSet() {
 	$("#setTable").jqGrid("saveCell", lastrow, lastcell);
 	var search = {};
 	search["setCommunity"] = $('#setCommunity').val();
@@ -403,12 +433,11 @@ function tableView() {
 	search["syntax"] = $('#syntax').val();
 	search["host"] = $('#host').val();
 	search["version"] = getVersionValue();
-	if ($("#nodeName").val().indexOf("Entry") > 0) {
+	if ($("#nodeN").val().indexOf("Entry") > 0) {
 		search["oid"] = $('#oid').val();
 	} else {
 		search["oid"] = $('#oid').val() + ".1";
 	}
-
 	search["port"] = $('#port').val();
 	search["setValue"] = $('#setValue').val();
 	search["timeout"] = $('#timeout').val();
@@ -430,9 +459,11 @@ function tableView() {
 			// ShowDiv('tableMainProduct');
 			if (eval(data.result).length == 0) {
 				alert("There is no data in the table");
+				
 				return;
 			}
 			createJqgridJson(data.result);
+			
 			return;
 		},
 		error : function(e) {
@@ -447,22 +478,26 @@ var viewlastrow, viewlastcell;
 var tablejsonvar = [];
 var accessvar = {};
 var syntaxvar = {};
+var names ;
+var viewTableGrid;
+
 function createJqgridJson(str) {
-	var names = [];
+	
 	var model = [];
 	var jsons = [];
-
+	names=[];
 	var j = {};
 	// 构造jqgri表头
 	names.push("instance");
 	for (var n = 0; n < tree.aNodes.length; n++) {
 		var treeNodeOid = tree.aNodes[n].target;
-		if (treeNodeOid == undefined) {
+		if (treeNodeOid == undefined ) {
 			continue;
 		}
 		for (var i = 0; i < treeJson.length; i++) {
 			if (treeNodeOid.indexOf($("#oid").val()) > -1) {
-				if (treeJson[i].id == tree.aNodes[n].id) {
+				
+				if (treeJson[i].id == tree.aNodes[n].target.replace(/[\.]/g,"")) {
 					if (treeJson[i].isTableColumn == true) {
 						names.push(treeJson[i].name);
 						accessvar[treeJson[i].name] = treeJson[i].access;
@@ -499,11 +534,11 @@ function createJqgridJson(str) {
 				for (var k = nameCount; k < names.length; k++) {
 					if (k == names.length - 1) {
 						j[names[k]] = jsonStr[index1].value;
-						if (accessvar[names[k]] == "read-write") {
+// if (accessvar[names[k]] == "read-write") {
 							j["oid" + names[k]] = jsonStr[index1].oid;
-						} else {
-							j["oid" + names[k]] = "";
-						}
+// } else {
+// j["oid" + names[k]] = "";
+// }
 						j["update"] = "0";
 						nameCount++;
 						jstr += JSON.stringify(j) + ",";
@@ -512,11 +547,11 @@ function createJqgridJson(str) {
 					}
 
 					j[names[k]] = jsonStr[index1].value;
-					if (accessvar[names[k]] == "read-write") {
+// if (accessvar[names[k]] == "read-write") {
 						j["oid" + names[k]] = jsonStr[index1].oid;
-					} else {
-						j["oid" + names[k]] = "";
-					}
+// } else {
+// j["oid" + names[k]] = "";
+// }
 					nameCount++;
 					break;
 
@@ -528,7 +563,7 @@ function createJqgridJson(str) {
 	});
 
 	jstr = jstr.substring(0, jstr.length - 1) + "]";
-	var jqdata = JSON.parse(jstr);
+	jqdata = JSON.parse(jstr);
 	// 此处因为数据源数组中的结构相同且不为空，直接遍历索引为0的数据即可
 	var name = [];
 	$.each(jqdata[0], function(key, value) {
@@ -539,24 +574,49 @@ function createJqgridJson(str) {
 		});
 	});
 	// 创建jqGrid组件
-	var editVal;
-	jQuery("#viewTable").jqGrid(
+	// 计算viewTable的宽度
+	var widths=document.body.scrollWidth;
+	var aa=Math.round(($("#tableDiv").width()/$(document).width())*100);// search_tb某个div
+	var bb=widths*aa/100-10;
+	var selectRowid;
+	viewTableGrid=jQuery("#viewTable").jqGrid(
 			{
 				datatype : "json", // 请求数据返回的类型。可选json,xml,txt
 				colNames : name, // jqGrid的列显示名字
 				colModel : model,
-				height : 380,
-				cellEdit : true,
+				height:260,
+				width:bb,
+				
+		        shrinkToFit: false,
+		        scrollrows: true,
+				cellEdit : false,
 				cellsubmit : "clientArray",
 				// rowNum : 50, // 一页显示多少条
 				// rowList : [ 10, 20, 30 ], // 可供用户选择一页显示多少条
-				pager : '#viewpager', // 表格页脚的占位符(一般是div)的id
+				// pager : '#viewpager', // 表格页脚的占位符(一般是div)的id
 				sortname : '', // 初始化的时候排序的字段
 				sortorder : "", // 排序方式,可选desc,asc
 				// mtype : "post", // 向后台请求数据的ajax的类型。可选post,get
 				viewrecords : true,
 				// caption : "Table View" // 表格的标题名字
-
+// multiselect: true,
+// multiboxonly:true,
+// beforeSelectRow: beforeSelectRow,// js方法
+				beforeSelectRow: function (rowid, e) {
+					if(selectRowid!=rowid){
+						$("#"+selectRowid+ " td").css("background-color","white");
+						
+					}
+					selectRowid=rowid;
+					$("#viewTable").jqGrid('resetSelection'); 
+					$("#viewTable").setSelection(rowid);
+					$("#"+rowid+ " td").css("background-color","lightGreen");
+					return(true);
+// var $myGrid = $(this),
+// i = $.jgrid.getCellIndex($(e.target).closest('td')[0]),
+// cm = $myGrid.jqGrid('getGridParam', 'colModel');
+// return (cm[i].name === 'cb');
+					},
 				afterEditCell : function(rowid, celname, value, iRow, iCol) {
 					viewlastrow = iRow;
 					viewlastcell = iCol;
@@ -566,15 +626,17 @@ function createJqgridJson(str) {
 					if (editVal != value) {
 						$("#viewTable").jqGrid('setCell', rowid, 'update', '1',
 								'not-editable-cell');
-						$("#viewTable").jqGrid('setCell', rowid, celname, '',
-								{
-									background : 'LightGreen'
-								});
-						$("#bth-tablesave").attr("disabled",false);
+						$("#viewTable").jqGrid('setCell', rowid, celname, '', {
+							background : 'LightGreen'
+						});
+						$("#bth-tablesave").attr("disabled", false);
 					}
 					editVal = "";
 				}
 			});
+
+	
+
 	// 将jqdata的值循环添加进jqGrid
 	for (var i = 0; i <= jqdata.length; i++) {
 		jQuery("#viewTable").jqGrid('addRowData', i + 1, jqdata[i]);
@@ -595,13 +657,26 @@ function createJqgridJson(str) {
 			// colModel[i].css("background-color", "pink");
 
 		}
-		if (colModel[i].name.substring(0, 3) == "oid") {
-			jQuery("#viewTable").setGridParam().hideCol(colModel[i].name)
-					.trigger("reloadGrid");
-		}
+ if (colModel[i].name.substring(0, 3) == "oid") {
+ jQuery("#viewTable").setGridParam().hideCol(colModel[i].name)
+ .trigger("reloadGrid");
+ }
 	}
 	jQuery("#viewTable").setGridParam().hideCol("update").trigger("reloadGrid");
+	$("#cb_"+grid[0].id).hide();
+	showTable();
 }
+// tableView功能中的只选中一行
+// function beforeSelectRow()
+// {
+// // $("#viewTable").jqGrid('resetSelection');
+// // return(true);
+// var $myGrid = $(this),
+// i = $.jgrid.getCellIndex($(e.target).closest('td')[0]),
+// cm = $myGrid.jqGrid('getGridParam', 'colModel');
+// return (cm[i].name === 'cb');
+//
+// }
 // 动态生成grid前，清空jgrid数据
 function deleteAll() {
 
@@ -625,7 +700,7 @@ function saveTable() {
 	search["maxRepetitions"] = $('#maxRepetitions').val();
 	search["access"] = JSON.stringify(accessvar);
 	search["syntax"] = JSON.stringify(syntaxvar);
-	search["data"] = getViewTableJson();
+	search["data"] = getFormJsonTable();
 
 	// Data=
 	var jsonParam = JSON.stringify(search);
@@ -662,10 +737,356 @@ function getViewTableJson() {
 	return rows;
 }
 
-function treeInit(){
+function treeInit() {
 	$("#file").val("");
-	tree = new dTree('tree'); 
-	tree.add(0, -1, '<a href="javascript:" oncontextmenu="rightMouse(1);">ISO</a>');
+	tree = new dTree('tree');
+	tree.add(0, -1,
+			'<a href="javascript:" oncontextmenu="rightMouse(1);">ISO</a>');
 	tree.draw();
+
+}
+// tableview中修改某一行数据
+function editRow(){
 	
+	
+}
+function showSetDiv(){
+	$("#setDiv").show();
+	$("#resultDiv").hide();
+	$("#tableDiv").hide();
+	$("#bth-getlist").attr("disabled", false);
+	
+}
+function showTable(){
+	$("#setDiv").hide();
+	$("#resultDiv").hide();
+	$("#tableDiv").show();
+	$("#bth-getlist").attr("disabled", false);
+	
+}
+function getList(){
+	var ids = $("#setTable").jqGrid('getDataIDs');
+	var search = {};
+	search["setCommunity"] = $('#setCommunity').val();
+	search["host"] = $('#host').val();
+	search["version"] = getVersionValue();
+	search["oid"] = $('#oid').val();
+	search["port"] = $('#port').val();
+	search["timeout"] = $('#timeout').val();
+	search["retransmits"] = $('#retransmits').val();
+	search["nonRepeaters"] = $('#nonRepeaters').val();
+	search["maxRepetitions"] = $('#maxRepetitions').val();
+	search["data"] = getFormJson();
+	
+	var jsonParam = JSON.stringify(search);
+	$.ajax({
+		type : 'POST',
+		url : '/api/snmpGetList',
+		contentType : "application/json",
+		dataType : 'json', // 接受数据格式
+		data : jsonParam,
+		success : function(data) {
+			var jqdata = JSON.parse(data.result);
+			jQuery("#setTable").jqGrid("clearGridData");
+			for (var i = 0; i <= jqdata.length; i++) {
+				jQuery("#setTable").jqGrid('addRowData', i + 1, jqdata[i]);
+// jQuery("#viewTable").jqGrid('setCell',jqdata[i].value,jqdata[i].ipRouteDest,{color:'red'});
+			}
+			var ids = $("#setTable").jqGrid('getDataIDs');
+			for (var j = 0; j < ids.length; j++) {
+				if (setTableGrid.getCell(ids[j], "access") != "read-write") {
+					$("#setTable").jqGrid('setCell', ids[j], 'value', '',
+							'not-editable-cell');
+				}
+			}
+			jQuery("#setTable").setGridParam().trigger("reloadGrid");
+		}
+	});
+	
+}
+function editRow(){
+	var selectRowid;
+	
+	jQuery("#editRowTable").jqGrid("clearGridData");
+	 $("#editRowTable").jqGrid(
+			{
+				width : "95%",
+				height:400,
+				dataType : 'local',
+				cellEdit : true,
+				cellsubmit : "clientArray",
+// multiselect :true,
+				colNames : [ "id", "Name", "Syntax", "Value", "oid", "access","operate"],
+				colModel : [
+				// {name:"rowid",index:"rowid",align:'center'},
+					{	
+						name : "id",
+						index : "id",
+						align : 'center',hidden:true
+					}, {
+	                    label: 'operate', name: 'operate', index: 'operate', align: 'center',
+	                    formatter: function (cellvalue, options, rowObject) {
+	                        return "<a href='javascript:BindBtnUpMethod("+rowObject.id+")'>up </a>  <a href='javascript:BindBtnDownMethod("+rowObject.id+")'> down </a> <a href='javascript:BindBtnLeftMethod("+rowObject.id+")'>delete</a>";
+	                       
+	                    },
+	                },{	
+					name : "name",
+					index : "name",
+					align : 'center'
+				}, {
+					name : "syntax",
+					index : "syntax",
+					align : 'center'
+				}, {
+					name : "value",
+					index : "value",
+					align : 'center',
+					editable : true
+				}, {
+					name : "oid",
+					index : "oid",
+					align : 'center',hidden:true
+				}, {
+					name : "access",
+					index : "access",
+					align : 'center'
+				}],
+
+				viewrecords : true,
+				rowNum : 15,
+				rowList : [ 15, 20, 25, 30 ],
+				jsonReader : {
+					root : "rows",
+					page : "page",
+					total : "total",
+					records : "records",
+					repeatitems : false
+
+				},
+					afterEditCell : function(rowid, celname, value, iRow, iCol) {
+						$("#bth-tablesave").attr("disabled", false);
+						lastrow = iRow;
+						lastcell = iCol;
+						editVal = value;
+					},
+					beforeSaveCell : function(rowid, celname, value, iRow, iCol) {
+						if (editVal != value) {
+							$("#editRowTable").jqGrid('setCell', rowid, 'update', '1',
+							'not-editable-cell');
+							$("#bth-tablesave").attr("disabled", false);
+						}
+						editVal = "";
+					}
+			});
+	 	var id= $("#viewTable").jqGrid('getGridParam','selrow');
+		var oidSel=viewTableGrid.getCell(id, "oid")
+				for (var j = 0; j < names.length; j++) {
+					var name=names[j];
+					if(name.substring(0,3)=="oid" || name=="instance")continue;
+
+
+						var rows = [ {
+							"id" : j+1,
+							"name" : name,
+							"syntax" : syntaxvar[name],
+							"value" : viewTableGrid.getCell(id, name),
+							"oid" :viewTableGrid.getCell(id, "oid"+name) + ".0",
+							"access" : accessvar[name]
+						} ];
+						$("#editRowTable").jqGrid('addRowData', j + 1, rows[0]);
+					if (accessvar[name] != "read-write") {
+						$("#editRowTable").jqGrid('setCell', j+1, 'value', '',
+								'not-editable-cell');
+					}
+						
+						
+					
+				}
+}
+
+
+// 摘要：
+// 内容：按钮左移
+function BindBtnLeftMethod(rowid) {
+	
+// 删除选中行
+// rowid++;
+// var rowid = $("#editRowTable").jqGrid('getGridParam', 'selrow');
+if (rowid == "" || rowid == undefined || rowid == null) {
+   alert("移除行未选中！");
+    return;
+} else {
+    var flag = $("#editRowTable").jqGrid("delRowData", rowid);
+    if (!flag) {
+       alert("移除操作失败！");
+    }
+}
+}
+// 摘要：
+// 内容：按钮上移
+function BindBtnUpMethod(rowid) {
+	$("#editRowTable").jqGrid("saveCell", lastrow, lastcell);
+// rowid++;
+  var obj = $("#editRowTable");
+  var IDs = obj.getDataIDs();
+  if (rowid == "" || rowid == null || rowid == undefined) {
+     alert("No record selected!");
+      return false;
+  }
+  var rowIndex = getRowIndexByRowId(IDs, rowid);
+  if (rowIndex == 0) {
+     alert("You can't move upward.!");
+  } else {
+      var srcrowid = getRowIdByRowIndex(IDs, rowIndex - 2);
+      var rowUpId = getRowIdByRowIndex(IDs, rowIndex - 1);
+      var rowData = obj.jqGrid('getRowData', rowid);
+      var rowUpData = obj.jqGrid('getRowData', rowUpId);
+      // 删除当前行
+      obj.delRowData(rowid);
+      obj.delRowData(rowUpId);
+      // 新插入一行
+      obj.addRowData(rowid, rowData, "after", srcrowid);
+      obj.addRowData(rowUpId, rowUpData, "after", rowid);
+      // 默认再选中新增的这个行
+      obj.setSelection(rowid);
+  }
+}
+
+// 摘要：
+// 内容：根据rowid，获取索引值
+function getRowIndexByRowId(Ids, id) {
+  var index = 0;
+  for (var i = 0; i < Ids.length; i++) {
+      if (Ids[i] == id) {
+          index = i;
+      }
+  }
+  return index;
+}
+
+// 摘要：
+// 内容：根据索引值获取rowid值
+function getRowIdByRowIndex(Ids, index) {
+  var rowid = "";
+  for (var i = 0; i < Ids.length; i++) {
+      if (i == index) {
+          rowid = Ids[i];
+      }
+  }
+  return rowid;
+}
+
+// 摘要：
+// 内容：按钮下移
+function BindBtnDownMethod(rowid) {
+	$("#editRowTable").jqGrid("saveCell", lastrow, lastcell);
+// rowid++;
+  var obj = $("#editRowTable");
+  var IDs = obj.getDataIDs();
+// var rowid = obj.jqGrid('getGridParam', 'selrow');
+  if (rowid == "" || rowid == null || rowid == undefined) {
+     alert("No record selected!");
+      return false;
+  }
+  var rowIndex = getRowIndexByRowId(IDs, rowid);
+  if (rowIndex == (IDs.length - 1)) {
+     alert('The last line can not be moved down!');
+  } else {
+      var srcrowid = getRowIdByRowIndex(IDs, rowIndex - 1);
+      var rowDownId = getRowIdByRowIndex(IDs, rowIndex + 1);
+      var rowData = obj.jqGrid('getRowData', rowid);
+      var rowDownData = obj.jqGrid('getRowData', rowDownId);
+      // 删除当前行
+      obj.delRowData(rowid);
+      obj.delRowData(rowDownId);
+      // 新插入一行
+      obj.addRowData(rowDownId, rowDownData, "after", srcrowid);
+      obj.addRowData(rowid, rowData, "after", rowDownId);
+      // 默认再选中新增的这个行
+      obj.setSelection(rowid);
+  }
+}
+
+/* 批量Set,提交表单 */
+function tableEditSave() {
+	$("#editRowTable").jqGrid("saveCell", lastrow, lastcell);
+	var search = {};
+	search["setCommunity"] = $('#setCommunity').val();
+	search["host"] = $('#host').val();
+	search["version"] = getVersionValue();
+	search["oid"] = $('#oid').val();
+	search["port"] = $('#port').val();
+	search["timeout"] = $('#timeout').val();
+	search["retransmits"] = $('#retransmits').val();
+	search["nonRepeaters"] = $('#nonRepeaters').val();
+	search["maxRepetitions"] = $('#maxRepetitions').val();
+	search["access"] = JSON.stringify(accessvar);
+	search["syntax"] = JSON.stringify(syntaxvar);
+	search["data"] = getFormJsonTable();
+
+	// Data=
+	var jsonParam = JSON.stringify(search);
+	$.ajax({
+		type : 'POST',
+		url : '/api/snmpTableBatchSet',
+		contentType : "application/json",
+		dataType : 'json', // 接受数据格式
+		data : jsonParam,
+		success : function(data) {
+			alert(data.result);
+		}
+	});
+
+}
+function getFormJsonTable() {
+	var tmp = [];
+	var Data = "";
+	// 获取当前表格的所有数据
+	var o = jQuery("#editRowTable");
+	// 获取当前显示的数据
+	var rows = o.jqGrid('getRowData');
+	var rowNum = o.jqGrid('getGridParam', 'rowNum'); // 获取显示配置记录数量
+	var total = o.jqGrid('getGridParam', 'records'); // 获取查询得到的总记录数量
+	// 设置rowNum为总记录数量并且刷新jqGrid，使所有记录现出来调用getRowData方法才能获取到所有数据
+	o.jqGrid('setGridParam', {
+		rowNum : total
+	}).trigger('reloadGrid');
+	var rows = o.jqGrid('getRowData'); // 此时获取表格所有匹配的
+	o.jqGrid('setGridParam', {
+		rowNum : rowNum
+	}).trigger('reloadGrid'); // 还原原来显示的记录数量
+	// return rows;
+	return rows;
+}
+
+/**
+ * 合并两个json对象属性为一个对象
+ * 
+ * @param jsonbject1
+ * @param jsonbject2
+ * @returns resultJsonObject
+ */
+function mergeJsonObject (jsonbject1, jsonbject2)
+{
+var resultJsonObject=[];
+var attr2=0;
+for(var attr in jsonbject1){
+resultJsonObject[attr]=jsonbject1[attr];
+attr2++;
+}
+if(attr2>0){
+	attr2--;
+	for(var attr in jsonbject2){
+		resultJsonObject[attr2]=jsonbject2[attr];
+		attr2++;
+		}
+}else{
+	for(var attr in jsonbject2){
+		resultJsonObject[attr]=jsonbject2[attr];
+		}
+}
+
+
+
+   return resultJsonObject;
 }

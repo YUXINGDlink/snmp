@@ -106,4 +106,13 @@ public interface Snmp4jInterface {
      * @throws IOException  <br>
      */
     String batchSet(String jsonParam) throws IOException;
+    /**
+     * 
+     * Description: mibbrowser前台传入的多个oid,进行查询操作<br> 
+     *  
+     * @param jsonParam
+     * @return
+     * @throws IOException <br>
+     */
+    String getList2Mib(String jsonParam) throws IOException;
 }

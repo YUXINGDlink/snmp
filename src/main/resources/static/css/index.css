@@ -63,7 +63,6 @@ body {
 	width: 20%;
 	height: 100%;
 	min-height: 600px;
-	background-color: 	#FFFFFF;
 	overflow:auto;
 }
 
@@ -72,6 +71,8 @@ body {
 	float: right;
 	width: 80%;
 	min-height: 600px;
+	
+    background-color:   #FFFFFF;
 }
 
 .main h1 {
@@ -113,12 +114,10 @@ body {
 
 .dtree a.node:hover, .dtree a.nodeSel:hover {
 	color: #006600;
-	text-decoration: none;
+	text-decoration: underline;
 }
 
-.dtree a.nodeSel {
-	background-color: #c0d2ec;
-}
+
 
 .dtree .clip {
 	overflow: hidden;
@@ -152,4 +151,18 @@ body {
         } 
  .btn{
     cursor:pointer;
+}
+
+textarea{  
+    border:1;  
+    background-color:transparent;  
+    /*scrollbar-arrow-color:yellow;  
+    scrollbar-base-color:lightsalmon;  
+    overflow: hidden;*/  
+    color: #666464;  
+    height: auto;  
+}  
+
+.tbSelectCss {
+    background-color:#d5f4fe;
 }

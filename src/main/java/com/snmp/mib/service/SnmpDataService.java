@@ -29,6 +29,7 @@ import org.snmp4j.smi.Null;
 import org.snmp4j.smi.OID;
 import org.snmp4j.smi.OctetString;
 import org.snmp4j.smi.TimeTicks;
+import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.smi.Variable;
 import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
@@ -49,7 +50,7 @@ import net.sf.json.JSONObject;
  * 
  * @author yx <br>
  * @version 1.0 <br>
- * @CreateDate 2018�?6�?8�? <br>
+ * @CreateDate 2018-6-8- <br>
  * @since V1.0 <br>
  * @see com.snmp.mib.service <br>
  */
@@ -74,11 +75,14 @@ public class SnmpDataService implements Snmp4jInterface {
      * @author yx<br>
      * @param search
      *            SearchCriteria
-     * @param community 
+     * @param community
      * @return <br>
      */
     public CommunityTarget createDefault(SearchCriteria search, final String community) {
         Address address = GenericAddress.parse(DEFAULT_PROTOCOL + ":" + search.getHost() + "/" + search.getPort());
+        /** 使用模拟器时配置 */
+        // Address address = GenericAddress.parse(DEFAULT_PROTOCOL + ":" +
+        // search.getHost());
         Target target;
 
         if (search.getVersion() == 3) {
@@ -90,14 +94,12 @@ public class SnmpDataService implements Snmp4jInterface {
             ((UserTarget) target).setSecurityLevel(SecurityLevel.AUTH_PRIV);
             ((UserTarget) target).setSecurityName(new OctetString("MD5DES"));
             target.setVersion(SnmpConstants.version3);
-        }
-        else {
+        } else {
             target = new CommunityTarget();
             if (search.getVersion() == 1) {
                 target.setVersion(SnmpConstants.version1);
                 ((CommunityTarget) target).setCommunity(new OctetString(community));
-            }
-            else {
+            } else {
                 target.setVersion(SnmpConstants.version2c);
                 ((CommunityTarget) target).setCommunity(new OctetString(community));
             }
@@ -105,7 +107,7 @@ public class SnmpDataService implements Snmp4jInterface {
         }
         target.setAddress(address);
         // target.setVersion(search.getVersion());
-        target.setTimeout(search.getTimeout()); // milliseconds
+        target.setTimeout(3000); // milliseconds
         target.setRetries(search.getRetransmits());
         return (CommunityTarget) target;
     }
@@ -115,7 +117,7 @@ public class SnmpDataService implements Snmp4jInterface {
      * Description:创建PDU，snmp v1,v2,v3 ，pdu不同<br>
      * 
      * @author yx<br>
-     * @param target 
+     * @param target
      * @return <br>
      */
     public PDU createPDU(final Target target) {
@@ -126,8 +128,7 @@ public class SnmpDataService implements Snmp4jInterface {
             OctetString contextEngineId = new OctetString(MPv3.createLocalEngineID());
             scopedPDU.setContextEngineID(contextEngineId);
             // scopedPDU.setContextName(this.contextName);//must be same as SNMP agent
-        }
-        else {
+        } else {
             request = new PDU();
         }
         return request;
@@ -162,34 +163,28 @@ public class SnmpDataService implements Snmp4jInterface {
             // 解析Response
             if (response == null) {
                 result = "response is null";
-            }
-            else {
+            } else {
                 if (response.getErrorStatus() == PDU.noError) {
                     Vector<? extends VariableBinding> vbs = response.getVariableBindings();
                     for (VariableBinding vb : vbs) {
                         if ("noSuchInstance".equals(vb.getVariable().toString())) {
                             result += "Error:" + vb + " ," + vb.getVariable().getSyntaxString();
-                        }
-                        else {
+                        } else {
                             result += vb + " ," + vb.getVariable().getSyntaxString();
                         }
                     }
-                }
-                else {
+                } else {
                     result += "Error:" + response.getErrorStatusText();
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("SNMP Exception:" + e);
-        }
-        finally {
+        } finally {
             if (snmp != null) {
                 try {
                     snmp.close();
-                }
-                catch (IOException ex1) {
+                } catch (IOException ex1) {
                     snmp = null;
                 }
             }
@@ -226,29 +221,24 @@ public class SnmpDataService implements Snmp4jInterface {
 
             if (response == null) {
                 result = "response is null";
-            }
-            else {
+            } else {
                 if (response.getErrorStatus() == PDU.noError) {
                     Vector<? extends VariableBinding> vbs = response.getVariableBindings();
                     for (VariableBinding vb : vbs) {
                         result += vb + " ," + vb.getVariable().getSyntaxString();
                     }
-                }
-                else {
+                } else {
                     result += "Error:" + response.getErrorStatusText();
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("SNMP Exception:" + e);
-        }
-        finally {
+        } finally {
             if (snmp != null) {
                 try {
                     snmp.close();
-                }
-                catch (IOException ex1) {
+                } catch (IOException ex1) {
                     snmp = null;
                 }
             }
@@ -283,28 +273,24 @@ public class SnmpDataService implements Snmp4jInterface {
             snmp.listen();
             pdu.setType(PDU.GET);
             ResponseEvent respEvent = snmp.send(pdu, target);
-            System.out.println("PeerAddress:" + respEvent.getPeerAddress()); 
+            System.out.println("PeerAddress:" + respEvent.getPeerAddress());
             PDU response = respEvent.getResponse();
             if (response == null) {
                 System.out.println("response is null");
-            }
-            else {
+            } else {
                 for (int i = 0; i < response.size(); i++) {
                     VariableBinding vb = response.get(i);
                     result += vb + " ," + vb.getVariable().getSyntaxString() + "\n";
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("SNMP Exception:" + e);
-        }
-        finally {
+        } finally {
             if (snmp != null) {
                 try {
                     snmp.close();
-                }
-                catch (IOException ex1) {
+                } catch (IOException ex1) {
                     snmp = null;
                 }
             }
@@ -315,14 +301,14 @@ public class SnmpDataService implements Snmp4jInterface {
 
     /**
      * 
-     * Description:walk命令 <br>
+     * Description:walk命令getNext <br>
      * 
      * @author yx<br>
      * @param search
      * @return <br>
      */
-    @Override
-    public String walk(SearchCriteria search) {
+    // @Override
+    public String walkWithGetNext(SearchCriteria search) {
         CommunityTarget target = createDefault(search, search.getReadCommunity());
         TransportMapping transport = null;
         String result = "";
@@ -343,8 +329,7 @@ public class SnmpDataService implements Snmp4jInterface {
                     System.out.println("responsePDU == null");
                     finished = true;
                     break;
-                }
-                else {
+                } else {
                     vbObject = response.get(0);
                 }
                 // walk命令是否完成
@@ -354,26 +339,22 @@ public class SnmpDataService implements Snmp4jInterface {
                     result += vbObject.getOid() + " = " + vbObject.getVariable() + "\n";
                     pdu.setRequestID(new Integer32(0));
                     pdu.set(0, vbObject);
-                }
-                else {
+                } else {
                     System.out.println("SNMP walk has finished.");
                     snmp.close();
                 }
             }
             System.out.println("----> demo end <----");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             result = "SNMP walk Exception: " + e;
             e.printStackTrace();
             System.out.println("SNMP walk Exception: " + e);
 
-        }
-        finally {
+        } finally {
             if (snmp != null) {
                 try {
                     snmp.close();
-                }
-                catch (IOException ex1) {
+                } catch (IOException ex1) {
                     snmp = null;
                 }
             }
@@ -386,9 +367,9 @@ public class SnmpDataService implements Snmp4jInterface {
      * Description: walk操作时，判断是否已运行完<br>
      * 
      * @author yx<br>
-     * @param targetOID 
-     * @param pdu 
-     * @param vb 
+     * @param targetOID
+     * @param pdu
+     * @param vb
      * @return <br>
      */
     private static boolean checkWalkFinished(OID targetOID, PDU pdu, VariableBinding vb) {
@@ -397,24 +378,19 @@ public class SnmpDataService implements Snmp4jInterface {
             System.out.println("[true] responsePDU.getErrorStatus() != 0 ");
             System.out.println(pdu.getErrorStatusText());
             isFinished = true;
-        }
-        else if (vb.getOid() == null) {
+        } else if (vb.getOid() == null) {
             System.out.println("[true] vb.getOid() == null");
             isFinished = true;
-        }
-        else if (vb.getOid().size() < targetOID.size()) {
+        } else if (vb.getOid().size() < targetOID.size()) {
             System.out.println("[true] vb.getOid().size() < targetOID.size()");
             isFinished = true;
-        }
-        else if (targetOID.leftMostCompare(targetOID.size(), vb.getOid()) != 0) {
+        } else if (targetOID.leftMostCompare(targetOID.size(), vb.getOid()) != 0) {
             System.out.println("[true] targetOID.leftMostCompare() != 0");
             isFinished = true;
-        }
-        else if (Null.isExceptionSyntax(vb.getVariable().getSyntax())) {
+        } else if (Null.isExceptionSyntax(vb.getVariable().getSyntax())) {
             System.out.println("[true] Null.isExceptionSyntax(vb.getVariable().getSyntax())");
             isFinished = true;
-        }
-        else if (vb.getOid().compareTo(targetOID) <= 0) {
+        } else if (vb.getOid().compareTo(targetOID) <= 0) {
             System.out.println("[true] Variable received is not " + "lexicographic successor of requested " + "one:");
             System.out.println(vb.toString() + " <= " + targetOID);
             isFinished = true;
@@ -442,26 +418,22 @@ public class SnmpDataService implements Snmp4jInterface {
         String result = "";
         if (response == null) {
             result = "response is null";
-        }
-        else {
+        } else {
             if (response.getErrorIndex() == PDU.noError && response.getErrorStatus() == PDU.noError) {// 判断返回报文是否正确
                 VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
                 Variable var = vb.getVariable();
                 if (search.getSetValue().equals(var.toString())) {// 比较返回值和设置�?
                     System.out.println("SET操作成功 ");
                     result = "SET操作成功 !";
-                }
-                else {
+                } else {
                     System.out.println("SET操作失败 ");
                     result = "SET操作失败 !";
                 }
-            }
-            else {
+            } else {
                 try {
                     result = "错误信息:" + response.getErrorStatusText();
                     throw new Exception("错误信息:" + response.getErrorStatusText());
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -483,26 +455,28 @@ public class SnmpDataService implements Snmp4jInterface {
     @Override
     public String tableView(SearchCriteria search) {
         CommunityTarget target = createDefault(search, search.getReadCommunity());
+        target.setTimeout(3000); // 3s
         String result = "";
         List<MibObject> moList = new ArrayList();
         int columnCount = 0;
         try {
-            // 实例化接�?
+            // 实例化
+            PDU pdu = createPDU(target);
             DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
             snmp = new Snmp(transport);
-            // 监听
             snmp.listen();
-            TableUtils utils = new TableUtils(snmp, new DefaultPDUFactory(PDU.GETBULK));// GETBULK
-            utils.setMaxNumRowsPerPDU(5);
-            OID[] columnOIDs = new OID[] { new OID(search.getOid()) };
-            // utils.getTable(target, columnOIDs, listener, null, null, null);
-            // 取表数据
-            List<TableEvent> rowvalues = utils.getTable(target, columnOIDs, new OID("0"), new OID("50"));
+            TableUtils utils = new TableUtils(snmp, new DefaultPDUFactory(PDU.GETBULK));// GETNEXT or GETBULK
+            OID[] columnOids = new OID[] { new OID(search.getOid()) };
+            // If not null, all returned rows have an index in a range (lowerBoundIndex,
+            // upperBoundIndex]
+            // lowerBoundIndex,upperBoundIndex都为null时返回所有的叶子节点。
+            // 必须具体到某个OID,,否则返回的结果不会在(lowerBoundIndex, upperBoundIndex)之间
+            List<TableEvent> rowvalues = utils.getTable(target, columnOids, null, null); //
             int columnTemp = 0;
             for (int i = 0; i < rowvalues.size(); i++) {
-                // 取list中的�?�?
+                // 取list中的Row
                 TableEvent te = (TableEvent) rowvalues.get(i);
-                // 对每�?行结果进行再次拆�?
+                // 对每行结果进行再次拆分
                 VariableBinding[] vb = te.getColumns();
                 if (vb != null) {
                     for (int j = 0; j < vb.length; j++) {
@@ -515,7 +489,7 @@ public class SnmpDataService implements Snmp4jInterface {
                             columnTemp = Integer.valueOf(instanceId.substring(0, instanceId.indexOf('.')));
                             columnCount++;
                         }
-                        mo.setDesc(instanceId.substring(0, instanceId.indexOf(".")));
+                        mo.setDesc(instanceId.substring(0, instanceId.indexOf('.')));
                         mo.setId(instanceId.substring(instanceId.indexOf('.') + 1, instanceId.length()));
                         mo.setOid(vb[j].getOid().toString());
                         mo.setValue(vb[j].getVariable().toString());
@@ -523,15 +497,14 @@ public class SnmpDataService implements Snmp4jInterface {
                         // mo.setName(name);
                         moList.add(mo);
                     }
-                }
-                else {
-                    throw new NullPointerException("被监控系统的网络相关配置错误！");
+                } else {
+                    // TODO
+                    result = "被监控系统的网络相关配置错误！";
+                    // throw new NullPointerException("被监控系统的网络相关配置错误！");
                 }
                 result += "\n";
             }
-            System.out.println(columnCount);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         JSONArray json = JSONArray.fromObject(moList);
@@ -553,12 +526,12 @@ public class SnmpDataService implements Snmp4jInterface {
         List<MibObject> moList = new ArrayList();
         ParseJson parseJson = new ParseJson();
         moList = parseJson.json2List(jsonParam.toString());
-        if(moList.size()==0) {
-            result="No data to be saved";
+        if (moList.size() == 0) {
+            result = "No data to be saved";
             return result;
         }
         JSONObject obj = new JSONObject().fromObject(jsonParam);
-        // �?始构造SearchCriteria
+        // 开始构造SearchCriteria
         SearchCriteria search = new SearchCriteria();
         search.setHost(obj.get("host").toString());
         search.setVersion(Integer.valueOf(obj.get("version").toString()));
@@ -579,67 +552,54 @@ public class SnmpDataService implements Snmp4jInterface {
             if ("DisplayString".equals(moList.get(i).getSyntax())) {
                 if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new OctetString("")));
-                }
-                else {
+                } else {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
                             new OctetString(moList.get(i).getValue())));
                 }
-            }
-            else if ("Integer".equals(moList.get(i).getSyntax())) {
+            } else if ("Integer".equals(moList.get(i).getSyntax())) {
                 if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Integer32()));
-                }
-                else {
+                } else {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
                             new Integer32(Integer.valueOf(moList.get(i).getValue()))));
                 }
 
-            }
-            else if ("PhysAddress".equals(moList.get(i).getSyntax())
+            } else if ("PhysAddress".equals(moList.get(i).getSyntax())
                     || "NetworkAddress".equals(moList.get(i).getSyntax())) {
                 if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
-                }
-                else {
+                } else {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
                             new OctetString(moList.get(i).getValue())));
                 }
 
-            }
-            else if ("IpAddress".equals(moList.get(i).getSyntax())) {
+            } else if ("IpAddress".equals(moList.get(i).getSyntax())) {
                 if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
-                } 
-                else {
+                } else {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
                             new IpAddress(moList.get(i).getValue())));
                 }
 
-            }
-            else if ("TimeTicks".equals(moList.get(i).getSyntax())) {
+            } else if ("TimeTicks".equals(moList.get(i).getSyntax())) {
                 if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new TimeTicks()));
-                } 
-                else {
+                } else {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
                             new TimeTicks(Long.valueOf(moList.get(i).getValue()))));
                 }
-            }
-            else if ("Gauge".equals(moList.get(i).getSyntax())) {
+            } else if ("Gauge".equals(moList.get(i).getSyntax())) {
                 if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Gauge32()));
-                }
-                else {
+                } else {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
                             new Gauge32(Long.valueOf(moList.get(i).getValue()))));
                 }
 
-            } 
-            else if ("Counter".equals(moList.get(i).getSyntax())) {
+            } else if ("Counter".equals(moList.get(i).getSyntax())) {
                 if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Counter32()));
-                }
-                else {
+                } else {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
                             new Counter32(Long.valueOf(moList.get(i).getValue()))));
                 }
@@ -652,20 +612,17 @@ public class SnmpDataService implements Snmp4jInterface {
         PDU response = resEvt.getResponse();
         if (response == null) {
             result = "response is null";
-        }
-        else {
+        } else {
             if (response.getErrorIndex() == PDU.noError && response.getErrorStatus() == PDU.noError) {// 判断返回报文是否正确
                 VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
                 // Variable var = vb.getVariable();
                 result = "SET操作成功 !";
 
-            }
-            else {
+            } else {
                 try {
                     result = "错误信息:" + response.getErrorStatusText();
                     throw new Exception("错误信息:" + response.getErrorStatusText());
-                } 
-                catch (Exception e) {
+                } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -710,36 +667,30 @@ public class SnmpDataService implements Snmp4jInterface {
             ResponseEvent responseEvent = snmp.send(pdu, target);
             PDU response = responseEvent.getResponse();
             if (response == null) {
-                System.out.println("TimeOut..."); 
-            } 
-            else {
+                System.out.println("TimeOut...");
+            } else {
                 if (response.getErrorStatus() == PDU.noError) {
                     Vector<? extends VariableBinding> vbs = response.getVariableBindings();
                     for (VariableBinding vb : vbs) {
                         if ("noSuchInstance".equals(vb.getVariable().toString())) {
                             result += "Error:" + vb + " ," + vb.getVariable().getSyntaxString();
-                        }
-                        else {
+                        } else {
                             result += vb + " ," + vb.getVariable().getSyntaxString();
                         }
-                        result+="\n";
+                        result += "\n";
                     }
-                } 
-                else {
+                } else {
                     result += "Error:" + response.getErrorStatusText();
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("SNMP Exception:" + e);
-        }
-        finally {
+        } finally {
             if (snmp != null) {
                 try {
                     snmp.close();
-                }
-                catch (IOException ex1) {
+                } catch (IOException ex1) {
                     snmp = null;
                 }
             }
@@ -754,7 +705,7 @@ public class SnmpDataService implements Snmp4jInterface {
      * 
      * @author snmp4j tableview中批量set功能<br>
      * @param jsonParam
-     *            �?要进行set操作的数�?
+     *            需要进行set操作的数据
      * @return <br>
      */
     @Override
@@ -763,12 +714,135 @@ public class SnmpDataService implements Snmp4jInterface {
         List<MibObject> moList = new ArrayList();
         ParseJson parseJson = new ParseJson();
         moList = parseJson.json2ListForTable(jsonParam);
-        if(moList.size()==0) {
-            result="No data to be saved";
+        if (moList.size() == 0) {
+            result = "No data to be saved";
             return result;
         }
         JSONObject obj = new JSONObject().fromObject(jsonParam);
         // �?始构造SearchCriteria
+        SearchCriteria search = new SearchCriteria();
+        search.setHost(obj.get("host").toString());
+        search.setVersion(Integer.valueOf(obj.get("version").toString()));
+        search.setPort(Integer.valueOf(obj.get("port").toString()));
+        search.setTimeout(Integer.valueOf(obj.get("timeout").toString()));
+        search.setRetransmits(Integer.valueOf(obj.get("retransmits").toString()));
+        search.setNonRepeaters(Integer.valueOf(obj.get("nonRepeaters").toString()));
+        search.setMaxRepetitions(Integer.valueOf(obj.get("maxRepetitions").toString()));
+
+        CommunityTarget target = createDefault(search, "private");
+        DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
+        snmp = new Snmp(transport);
+        snmp.listen();
+        PDU pdu = createPDU(target);
+        // pdu.add(new VariableBinding(new OID("1.3.6.1.2.1.1.5.0"), new
+        // OctetString("1")));
+        for (int i = 0; i < moList.size(); i++) {
+         
+            
+            if ("DisplayString".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new OctetString("")));
+                } else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new OctetString(moList.get(i).getValue())));
+                }
+            } else if ("INTEGER".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Integer32()));
+                } else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new Integer32(Integer.valueOf(moList.get(i).getValue()))));
+                }
+
+            } else if ("PhysAddress".equals(moList.get(i).getSyntax())
+                    || "NetworkAddress".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
+                } else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new OctetString(moList.get(i).getValue())));
+                }
+
+            } else if ("IpAddress".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
+                } else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new IpAddress(moList.get(i).getValue())));
+                }
+
+            } else if ("TimeTicks".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new TimeTicks()));
+                } else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new TimeTicks(Long.valueOf(moList.get(i).getValue()))));
+                }
+            } else if ("Gauge".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Gauge32()));
+                } else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new Gauge32(Long.valueOf(moList.get(i).getValue()))));
+                }
+
+            } else if ("Counter".equals(moList.get(i).getSyntax())) {
+                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Counter32()));
+                } else {
+                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
+                            new Counter32(Long.valueOf(moList.get(i).getValue()))));
+                }
+
+            }
+
+        }
+        pdu.setType(PDU.SET);
+        ResponseEvent resEvt = snmp.send(pdu, target);
+        PDU response = resEvt.getResponse();
+        if (response == null) {
+            result = "response is null";
+        } else {
+            if (response.getErrorIndex() == PDU.noError && response.getErrorStatus() == PDU.noError) {// 判断返回报文是否正确
+                VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
+                Variable var = vb.getVariable();
+                result = "SET操作成功 !";
+
+            } else {
+                try {
+                    result = "错误信息:" + response.getErrorStatusText();
+                    throw new Exception("错误信息:" + response.getErrorStatusText());
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        snmp.close();
+        return result;
+    }
+
+    /**
+     * 
+     * Description: <br>
+     * 
+     * @author snmp4j tableview中批量set功能<br>
+     * @param jsonParam
+     *            需要进行set操作的数据
+     * @return <br>
+     */
+    @Override
+    public String getList2Mib(String jsonParam) throws IOException {
+        String result = "";
+        List<MibObject> moList = new ArrayList();
+        ParseJson parseJson = new ParseJson();
+        moList = parseJson.json2ListForMib(jsonParam);
+        if (moList.size() == 0) {
+            result = "No data to be saved";
+            return result;
+        }
+        JSONObject obj = new JSONObject().fromObject(jsonParam);
+        // 开始构造SearchCriteria
         SearchCriteria search = new SearchCriteria();
         search.setHost(obj.get("host").toString());
         search.setVersion(Integer.valueOf(obj.get("version").toString()));
@@ -786,102 +860,110 @@ public class SnmpDataService implements Snmp4jInterface {
         // pdu.add(new VariableBinding(new OID("1.3.6.1.2.1.1.5.0"), new
         // OctetString("1")));
         for (int i = 0; i < moList.size(); i++) {
-            if ("DisplayString".equals(moList.get(i).getSyntax())) {
-                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new OctetString("")));
-                }
-                else {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
-                            new OctetString(moList.get(i).getValue())));
-                }
-            } 
-            else if ("INTEGER".equals(moList.get(i).getSyntax())) {
-                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Integer32()));
-                }
-                else {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
-                            new Integer32(Integer.valueOf(moList.get(i).getValue()))));
-                }
-
-            } 
-            else if ("PhysAddress".equals(moList.get(i).getSyntax())
-                    || "NetworkAddress".equals(moList.get(i).getSyntax())) {
-                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
-                } 
-                else {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
-                            new OctetString(moList.get(i).getValue())));
-                }
-
-            } 
-            else if ("IpAddress".equals(moList.get(i).getSyntax())) {
-                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new IpAddress()));
-                } 
-                else {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
-                            new IpAddress(moList.get(i).getValue())));
-                }
-
-            } 
-            else if ("TimeTicks".equals(moList.get(i).getSyntax())) {
-                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new TimeTicks()));
-                }
-                else {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
-                            new TimeTicks(Long.valueOf(moList.get(i).getValue()))));
-                }
-            } 
-            else if ("Gauge".equals(moList.get(i).getSyntax())) {
-                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Gauge32()));
-                } 
-                else {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
-                            new Gauge32(Long.valueOf(moList.get(i).getValue()))));
-                }
-
-            }
-            else if ("Counter".equals(moList.get(i).getSyntax())) {
-                if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new Counter32()));
-                } 
-                else {
-                    pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
-                            new Counter32(Long.valueOf(moList.get(i).getValue()))));
-                }
-
-            }
-
+            pdu.add(new VariableBinding(new OID(moList.get(i).getOid())));
         }
-        pdu.setType(PDU.SET);
-        ResponseEvent resEvt = snmp.send(pdu, target);
-        PDU response = resEvt.getResponse();
+        pdu.setType(PDU.GET);
+        ResponseEvent respEvent = snmp.send(pdu, target);
+        System.out.println("PeerAddress:" + respEvent.getPeerAddress());
+        PDU response = respEvent.getResponse();
         if (response == null) {
-            result = "response is null";
-        }
-        else {
-            if (response.getErrorIndex() == PDU.noError && response.getErrorStatus() == PDU.noError) {// 判断返回报文是否正确
-                VariableBinding vb = (VariableBinding) response.getVariableBindings().firstElement();
-                Variable var = vb.getVariable();
-                result = "SET操作成功 !";
-
-            }
-            else {
-                try {
-                    result = "错误信息:" + response.getErrorStatusText();
-                    throw new Exception("错误信息:" + response.getErrorStatusText());
-                }
-                catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+            System.out.println("response is null");
+        } else {
+            for (int j = 0; j < response.size(); j++) {
+                VariableBinding vb = response.get(j);
+                result += vb + " ," + vb.getVariable().getSyntaxString() + "\n";
+                for (int k = 0; k < moList.size(); k++) {
+                    if (moList.get(k).getOid().equals(vb.getOid().toString())) {
+                        moList.get(k).setValue(vb.getVariable().toString());
+                        break;
+                    }
                 }
             }
         }
         snmp.close();
+        JSONArray json = JSONArray.fromObject(moList);
+        return json.toString();
+    }
+
+    /**
+     * 
+     * Description: walk命令getBulk<br>
+     * 
+     * @author YuXing <br>
+     * @param search
+     * @return <br>
+     */
+    @Override
+    public String walk(SearchCriteria search) {
+        // 设置 目标
+        // search.setTimeout(60000);
+        CommunityTarget target = createDefault(search, search.getReadCommunity());
+        target.setTimeout(3000); // 3s
+        String result = "";
+        List<MibObject> moList = new ArrayList();
+        int columnCount = 0;
+        try {
+            // PDU 对象
+            PDU pdu = createPDU(target);
+            DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
+            snmp = new Snmp(transport);
+            snmp.listen();
+            TableUtils utils = new TableUtils(snmp, new DefaultPDUFactory(PDU.GETBULK));// GETNEXT or GETBULK
+            OID[] columnOids = new OID[] { new OID(search.getOid()) };
+            // If not null, all returned rows have an index in a range (lowerBoundIndex,
+            // upperBoundIndex]
+            // lowerBoundIndex,upperBoundIndex都为null时返回所有的叶子节点。
+            // 必须具体到某个OID,,否则返回的结果不会在(lowerBoundIndex, upperBoundIndex)之间
+            List<TableEvent> teList = utils.getTable(target, columnOids, null, null); //
+            int count = 0;
+            boolean isFinished = false;
+            for (TableEvent te : teList) {
+
+                if (isFinished) {
+                    break;
+                }
+                VariableBinding[] vb = te.getColumns();
+                if (vb == null) {
+                    continue;
+                }
+                if (vb != null) {
+                    for (int j = 0; j < vb.length; j++) {
+                        isFinished = checkWalkFinished(new OID(search.getOid()), pdu, vb[j]);
+                        if (!isFinished) {
+                            if ("noSuchInstance".equals(vb[j].getVariable().toString())) {
+                                result += "Error:" + vb + " ," + vb[j].getVariable().getSyntaxString();
+                            } else {
+                                count++;
+                                result += count + ":" + vb[j].getOid() + "=" + vb[j].getVariable().toString() + ","
+                                        + vb[j].getVariable().getSyntaxString();
+                            }
+                            result += "\n";
+                        } else {
+                            isFinished = true;
+                            break;
+                        }
+
+                    }
+                } else {
+                    // TODO
+                    result = "被监控系统的网络相关配置错误！";
+                    // throw new NullPointerException("被监控系统的网络相关配置错误！");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("SNMP Exception:" + e);
+        } finally {
+            if (snmp != null) {
+                try {
+                    snmp.close();
+                } catch (IOException ex1) {
+                    snmp = null;
+                }
+            }
+
+        }
         return result;
     }
+
 }
