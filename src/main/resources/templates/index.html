@@ -47,7 +47,7 @@
 						<table>
 							<tr>
 								<td><label>Host: </label><input type="text" id="host"
-									name="host" value="127.0.0.1">
+									name="host" value="172.18.192.202">
 									<button type="button" id="bth-protocolset"
 										onclick="ShowDiv('mainProduct','fade')"
 										class="btn btn-primary btn-lg">config</button></td>
@@ -94,7 +94,7 @@
 									<div style="text-align: left; display: none; height: 320px"
 										id="setDiv">
 										<button type="button" id="bth-batchsetsave"
-											onclick="saveMultiSet();" disabled="disabled"
+											onclick="saveMultiSet();" 
 											class="btn btn-primary btn-lg">set</button>
 
 										<button type="button" id="bth-getlist" onclick="getList();"
@@ -168,9 +168,9 @@
 		</div>
 		<div>
 			<fieldset
-				style="border-width: 1px; border-color: blue; width: 95%; height: 220">
+				style="border-width: 1px; border-color: blue; width: 800px%; height: 220">
 				<legend>snmp protocol version</legend>
-				<table style="width: 95%; border-top: 1px solid #C1DAD7;">
+				<table style="width: 95%; border-top: 1px solid #C1DAD7; border-left: 1px solid #C1DAD7;">
 					<tr>
 						<td><input type="radio" name="version" value='1' /><label>SNMPv1</label></td>
 						<td><input name="version" checked type="radio" value="2" /><label>SNMPv2c</label></td>
@@ -179,21 +179,21 @@
 				</table>
 			</fieldset>
 			<fieldset
-				style="border-width: 1px; border-color: blue; width: 95%; height: 220">
+				style="border-width: 1px; border-color: blue; width: 800px; height: 220">
 				<legend>General</legend>
-				<table style="width: 95%; border-top: 1px solid #C1DAD7;">
+				<table style="width: 90%;border-top: 1px solid #C1DAD7; border-left: 1px solid #C1DAD7;">
 					<tr>
-						<td><label>Timeout[s]</label><input name="timeout"
+						<td><label>Timeout[s]</label></td><td><input name="timeout"
 							id="timeout" value="5"></td>
-						<td><label>Retransmits</label><input name="retransmits"
+						<td><label>Retransmits</label></td><td><input name="retransmits"
 							id="retransmits" value="4"></td>
-						<td></td>
+						<td colspan="2"></td></tr>
 					<tr>
-						<td><label>ReadCommunity</label><input name="readCommunity"
+						<td><label>ReadCommunity</label></td><td><input name="readCommunity"
 							id="readCommunity" value="public"></td>
-						<td><label>SetCommunity</label><input name="setCommunity"
+						<td><label>SetCommunity</label></td><td><input name="setCommunity"
 							id="setCommunity" value="private"></td>
-						<td><label>Port</label><input name="port" id="port"
+						<td><label>Port</label></td><td><input name="port" id="port"
 							value="161"></td>
 					</tr>
 				</table>
@@ -201,20 +201,22 @@
 			<fieldset
 				style="border-width: 1px; border-color: blue; width: 95%; height: 220">
 				<legend>Get-Bulk settings</legend>
-				<label>Non repeaters</label> <input type="text" id="nonRepeaters"
-					name="nonRepeaters" value="0"> <label>Max
-					repetitions</label><input name="maxRepetitions" id="maxRepetitions"
-					value="10">
+				<table style="width: 95%; border-top: 1px solid #C1DAD7; border-left: 1px solid #C1DAD7;">
+                    <tr>
+				<td><label>Non repeaters</label></td><td> <input type="text" id="nonRepeaters"
+					name="nonRepeaters" value="0"></td><td> <label>Max
+					repetitions</label></td><td><input name="maxRepetitions" id="maxRepetitions"
+					value="10"></td></tr></table>
 
 			</fieldset>
 			<fieldset
 				style="border-width: 1px; border-color: blue; width: 95%; height: 220">
 				<legend>SNMPv3 security</legend>
-				<table style="width: 95%; border-top: 1px solid #C1DAD7;">
+				<table style="width: 95%; border-top: 1px solid #C1DAD7; border-left: 1px solid #C1DAD7;">
 					<tr>
 						<!--                        <td><label>User profile name</label><input name="profileName" id="profileName" ></td> -->
-						<td><label>User name</label><input name="userName"
-							id="userName"></td>
+						<td><label>User name</label></td><td><input name="userName"
+							id="userName"></td><td colspan="2"></td><td colspan="2"></td>
 
 						<td style="display: none"><label>Context name</label><input
 							name="contextName" id="contextName"></td>
@@ -223,32 +225,32 @@
 							name="contextEngineId" id="contextEngineId"></td>
 					</tr>
 					<tr>
-						<td><label>Authentication</label> <select name="authProtocol"
+						<td><label>Authentication</label> </td><td> <select name="authProtocol"
 							id="authProtocol">
 								<option value="0">None</option>
 								<option value="1">HMAC-MD5</option>
 								<option value="2">HMAC-SHA</option>
 						</select></td>
-						<td colspan="2"><label>Password</label><input name="authPass"
+						<td colspan="2"><label>Password</label></td><td><input name="authPass"
 							id="authPass" type="password"> <span id=clickauth><a
 								href="javascript:change('auth')">show</a></span></td>
 					</tr>
 					<tr>
-						<td><label>Privacy</label> <select name="priProtocol"
+						<td><label>Privacy</label></td><td> <select name="priProtocol"
 							id="priProtocol">
 								<option value="0">None</option>
 								<option value="1">CBC-DES</option>
 								<option value="2">CFB-AES-128</option>
 						</select></td>
-						<td colspan="2"><label>Password</label><input name="priPass"
+						<td colspan="2"><label>Password</label></td><td><input name="priPass"
 							id="priPass" type="password"> <span id=clickpri><a
 								href="javascript:change('pri')">show</a></span></td>
 
 					</tr>
-					<tr style="display: none">
-						<td><label>Security level</label><input name="securityLevel"
-							id="securityLevel"></td>
-					</tr>
+<!-- 					<tr style="display: none"> -->
+<!-- 						<td><label>Security level</label></td><td><input name="securityLevel" -->
+<!-- 							id="securityLevel"></td> -->
+<!-- 					</tr> -->
 				</table>
 			</fieldset>
 			<br />

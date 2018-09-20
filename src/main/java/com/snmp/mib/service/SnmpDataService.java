@@ -586,7 +586,7 @@ public class SnmpDataService implements Snmp4jInterface {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()), new TimeTicks()));
                 } else {
                     pdu.add(new VariableBinding(new OID(moList.get(i).getOid()),
-                            new TimeTicks(Long.valueOf(moList.get(i).getValue()))));
+                            new TimeTicks(0)));
                 }
             } else if ("Gauge".equals(moList.get(i).getSyntax())) {
                 if ("".equals(moList.get(i).getValue()) || moList.get(i).getValue() == null) {

@@ -816,7 +816,7 @@ function editRow(){
 				cellEdit : true,
 				cellsubmit : "clientArray",
 // multiselect :true,
-				colNames : [ "id", "Name", "Syntax", "Value", "oid", "access","operate"],
+				colNames : [ "id","operate", "Name", "Syntax", "Value", "oid", "access"],
 				colModel : [
 				// {name:"rowid",index:"rowid",align:'center'},
 					{	
